@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "runekit"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+license = "GPL"
+
+[tool.poetry.dependencies]
+python = ">=3.7,<3.8"
+requests = "^2.25.1"
+PySide2 = "^5.15.2"
+Pillow = "^8.1.0"
+python-xlib = "^0.29"
+
+[tool.poetry.dev-dependencies]
+black = "^20.8b1"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

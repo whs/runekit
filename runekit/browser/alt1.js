@@ -193,6 +193,7 @@
         // bindReadColorString(id, fontname, color, x, y) {
         //     return '';
         // },
+        // // TODO: Used in AfkScape
         // bindReadStringEx(id, x, y, args) {
         //     return '';
         // },

@@ -1,0 +1,24 @@
+import logging
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from PIL import Image
+
+try:
+    from .format import image_to_bgra
+except ImportError:
+    logging.warning("Cannot import native image code, using pure python")
+
+    def image_to_bgra(image: "Image") -> bytes:
+        buf = bytearray(image.width * image.height * image_8bpp.size)
+        index = 0
+        for p in image.getdata():
+            r = p[0]
+            g = p[1]
+            b = p[2]
+            a = p[3] if len(p) == 4 else 255
+
+            image_8bpp.pack_into(buf, index, b, g, r, a)
+            index += image_8bpp.size
+
+        return buf

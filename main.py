@@ -27,7 +27,7 @@ def main():
     game = game_manager.get_instances()[0]
 
     logging.debug("Loading app")
-    host.start_app(ClueSolver, game)
+    host.start_app(AfkScape, game)
 
     app.exec_()
 

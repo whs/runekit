@@ -1,8 +1,9 @@
 import base64
 import dataclasses
-import io
 import json
 import logging
+import struct
+import time
 from typing import TYPE_CHECKING, Dict, Callable, List
 from urllib.parse import urljoin
 
@@ -22,6 +23,7 @@ from PySide2.QtWebChannel import QWebChannel
 from PySide2.QtWebEngineCore import QWebEngineUrlSchemeHandler, QWebEngineUrlRequestJob
 
 from runekit.ui import tooltip
+from runekit.image import image_to_bgra
 
 if TYPE_CHECKING:
     from runekit.app.app import App
@@ -35,6 +37,9 @@ class ApiPermissionDeniedException(Exception):
             "Permission '%s' is needed for this action".format(required_permission)
         )
         self.required_permission = required_permission
+
+
+image_8bpp = struct.Struct("BBBB")
 
 
 class Alt1Api(QObject):
@@ -80,19 +85,8 @@ class Alt1Api(QObject):
 
     def _image_to_stream(self, image: Image) -> bytes:
         assert image.mode == "RGB" or image.mode == "RGBA"
-        buf = io.BytesIO()
-        for p in image.getdata():
-            r = p[0]
-            g = p[1]
-            b = p[2]
-            a = p[3] if len(p) == 4 else 255
 
-            buf.write(b.to_bytes(1, "little"))
-            buf.write(g.to_bytes(1, "little"))
-            buf.write(r.to_bytes(1, "little"))
-            buf.write(a.to_bytes(1, "little"))
-
-        return base64.b64encode(buf.getvalue())
+        return base64.b64encode(image_to_bgra(image))
 
     def get_screen_info_x(self):
         return self._screen_info.x()
@@ -126,6 +120,7 @@ class Alt1Api(QObject):
             return 0
 
         value = QCursor.pos()
+        # TODO: Make it relative to game window
         return (value.x() << 16) | value.y()
 
     mousePosition = Property(int, get_mouse_position, notify=update_mouse_signal)

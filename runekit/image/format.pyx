@@ -21,20 +21,21 @@ def image_to_bgra(image):
     cdef array.array buf_array = array.clone(template_array, width * height * 4, 0)
     cdef unsigned char *buf = buf_array.data.as_uchars
 
-    cdef size_t index
+    cdef size_t index, x, y
     cdef unsigned char r, g, b, a
 
-    for x in range(width):
-        for y in range(height):
-            index = ((y * width) + x) * 4
-            r = image32[y][x].r
-            g = image32[y][x].g
-            b = image32[y][x].b
-            a = image32[y][x].a
+    with nogil:
+        for x in range(width):
+            for y in range(height):
+                index = ((y * width) + x) * 4
+                r = image32[y][x].r
+                g = image32[y][x].g
+                b = image32[y][x].b
+                a = image32[y][x].a
 
-            buf[index] = b
-            buf[index+1] = g
-            buf[index+2] = r
-            buf[index+3] = a
+                buf[index] = b
+                buf[index+1] = g
+                buf[index+2] = r
+                buf[index+3] = a
 
     return buf_array.tobytes()

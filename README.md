@@ -17,7 +17,8 @@ Requires Qt5 to be installed
 
 ```sh
 poetry install --no-dev
-poetry run python setup.py build_ext --inplace  # Build native modules
+poetry build
+cp build/lib.*/runekit/image/*.cpython*.* runekit/image/
 python main.py
 ```
 

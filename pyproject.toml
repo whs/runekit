@@ -6,7 +6,7 @@ authors = ["Your Name <you@example.com>"]
 license = "GPL"
 
 [tool.poetry.dependencies]
-python = ">=3.7,<3.8"
+python = "^3.9,<3.10"
 requests = "^2.25.1"
 PySide2 = "^5.15.2"
 Pillow = "^8.1.0"

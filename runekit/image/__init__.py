@@ -1,4 +1,5 @@
 import logging
+import struct
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -9,8 +10,10 @@ try:
 except ImportError:
     logging.warning("Cannot import native image code, using pure python")
 
+    image_8bpp = struct.Struct("BBBB")
+
     def image_to_bgra(image: "Image", x, y, w, h) -> bytes:
-        buf = bytearray(width * height * image_8bpp.size)
+        buf = bytearray(w * h * image_8bpp.size)
         index = 0
         for p in image.crop((x, y, x + w, y + h)).getdata():
             r = p[0]

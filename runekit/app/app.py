@@ -1,6 +1,8 @@
 from typing import Optional, TYPE_CHECKING, List
 from urllib.parse import urljoin
 
+from PySide2.QtGui import QWindow
+
 from runekit.alt1.schema import AppManifest
 from runekit.app.view.window import AppWindow
 from runekit.browser import Alt1Api, WebProfile

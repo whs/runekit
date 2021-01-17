@@ -48,7 +48,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 name = "click"
 version = "7.1.2"
 description = "Composable command line interface toolkit"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
@@ -91,6 +91,14 @@ description = "Python Imaging Library (Fork)"
 category = "main"
 optional = false
 python-versions = ">=3.6"
+
+[[package]]
+name = "pymitter"
+version = "0.3.0"
+description = "Python port of the extended Node.js EventEmitter 2 approach providing namespaces, wildcards and TTL."
+category = "main"
+optional = false
+python-versions = ">=2.7"
 
 [[package]]
 name = "pyside2"
@@ -196,7 +204,7 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9,<3.10"
-content-hash = "97e531f998d1afe6fcc5ce138645484ed4b4137ccecfde8efc0bc0445c9b1757"
+content-hash = "b0cd78fe5987f05f5146fc1d94d9c86a0b59c0db8fd2f0f35c52fdb9fd337133"
 
 [metadata.files]
 appdirs = [
@@ -300,6 +308,9 @@ pillow = [
     {file = "Pillow-8.1.0-pp37-pypy37_pp73-manylinux2010_x86_64.whl", hash = "sha256:81c3fa9a75d9f1afafdb916d5995633f319db09bd773cb56b8e39f1e98d90820"},
     {file = "Pillow-8.1.0-pp37-pypy37_pp73-win32.whl", hash = "sha256:b6f00ad5ebe846cc91763b1d0c6d30a8042e02b2316e27b05de04fa6ec831ec5"},
     {file = "Pillow-8.1.0.tar.gz", hash = "sha256:887668e792b7edbfb1d3c9d8b5d8c859269a0f0eba4dda562adb95500f60dbba"},
+]
+pymitter = [
+    {file = "pymitter-0.3.0.tar.gz", hash = "sha256:edea199cb371ff4bbdd93bd8a167f1752ac3a23a7a55fd51e84bfacf575f2181"},
 ]
 pyside2 = [
     {file = "PySide2-5.15.2-5.15.2-cp27-cp27m-macosx_10_13_intel.whl", hash = "sha256:4f17a0161995678110447711d685fcd7b15b762810e8f00f6dc239bffb70a32e"},

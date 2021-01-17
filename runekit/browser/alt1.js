@@ -10,11 +10,13 @@
 
     // FIXME: Even though RPC is secure, this is not...
     let syncChan;
+    let api;
     let channel = new Promise(function (resolve) {
         let setup = function(){
-            new QWebChannel(qt.webChannelTransport, function (_channel) {
-                syncChan = _channel;
-                resolve(_channel);
+            new QWebChannel(qt.webChannelTransport, function (chan) {
+                syncChan = chan;
+                api = chan.objects.alt1;
+                resolve(chan);
             });
         };
         if (typeof window.qt !== 'undefined') {
@@ -36,6 +38,17 @@
         return xhr.responseText;
     }
 
+    function emit(param){
+        let listeners = alt1.events[param.eventName];
+        for(let i = 0; i < listeners.length; i++){
+            try {
+                listeners(param);
+            }catch(e){
+                console.error(e);
+            }
+        }
+    }
+
     window.alt1 = {
         overlay: {},
         version: '1.1.1',
@@ -47,13 +60,6 @@
         permissionGameState: true,
         permissionOverlay: true,
         permissionPixel: true,
-        rsX: 0,
-        rsY: 0,
-        rsWidth: 0,
-        rsHeight: 0,
-        rsScaling: 0,
-        rsActive: true,
-        rsLastActive: 0,
         lastWorldHop: 0,
         currentWorld: -1,
         rsPing: 0,
@@ -73,36 +79,71 @@
 
         get screenX() {
             if(!syncChan) return 0;
-            return syncChan.objects.alt1.screenInfoX;
+            return api.screenInfoX;
         },
 
         get screenY() {
             if(!syncChan) return 0;
-            return syncChan.objects.alt1.screenInfoY;
+            return api.screenInfoY;
         },
 
         get screenWidth() {
             if(!syncChan) return 0;
-            return syncChan.objects.alt1.screenInfoWidth;
+            return api.screenInfoWidth;
         },
 
         get screenHeight() {
             if(!syncChan) return 0;
-            return syncChan.objects.alt1.screenInfoHeight;
+            return api.screenInfoHeight;
         },
 
         get captureInterval() {
             if(!syncChan) return 1000;
-            return syncChan.objects.alt1.captureInterval;
+            return api.captureInterval;
         },
 
         get mousePosition() {
             if(!syncChan) return 0;
-            return syncChan.objects.alt1.mousePosition;
+            return api.mousePosition;
         },
 
         get rsLinked() {
-            return !!syncChan;
+            return !!api;
+        },
+
+        get rsX() {
+            if(!syncChan) return 0;
+            return api.gamePositionX;
+        },
+
+        get rsY() {
+            if(!syncChan) return 0;
+            return api.gamePositionY;
+        },
+
+        get rsWidth() {
+            if(!syncChan) return 0;
+            return api.gamePositionWidth;
+        },
+
+        get rsHeight() {
+            if(!syncChan) return 0;
+            return api.gamePositionHeight;
+        },
+
+        get rsScaling() {
+            if(!syncChan) return 0;
+            return api.gameScaling;
+        },
+
+        get rsActive() {
+            if(!syncChan) return 0;
+            return api.gameActive;
+        },
+
+        get rsLastActive() {
+            if(!syncChan) return 0;
+            return api.gameLastActive;
         },
 
         userResize(left, top, right, bottom) {
@@ -219,18 +260,16 @@
         // }
     };
 
-    function updateGamePosition(){
-        let pos = JSON.parse(syncChan.objects.alt1.gamePosition);
-        alt1.rsX = pos.x;
-        alt1.rsY = pos.y;
-        alt1.rsWidth = pos.width;
-        alt1.rsHeight = pos.height;
-        alt1.rsScaling = pos.scaling;
-    }
-
     channel.then(function(chan){
-        chan.objects.alt1.update_game_position_signal.connect(updateGamePosition);
-        updateGamePosition();
+        chan.objects.alt1.game_active_change_signal.connect(function(){
+            let active = chan.objects.alt1.gameActive;
+
+            if(active){
+                emit({eventName: 'rsfocus'});
+            }else{
+                emit({eventName: 'rsblur'});
+            }
+        });
     });
 
 })();

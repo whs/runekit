@@ -1,5 +1,6 @@
 import abc
 import dataclasses
+from pymitter import EventEmitter
 
 from PIL import Image
 
@@ -13,11 +14,15 @@ class WindowPosition:
     scaling: int
 
 
-class GameInstance(abc.ABC):
+class GameInstance(EventEmitter, abc.ABC):
     refresh_rate = 1000
 
     @abc.abstractmethod
     def get_position(self) -> WindowPosition:
+        ...
+
+    @abc.abstractmethod
+    def is_active(self) -> bool:
         ...
 
     @abc.abstractmethod

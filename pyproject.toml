@@ -12,6 +12,8 @@ PySide2 = "^5.15.2"
 Pillow = "^8.1.0"
 python-xlib = "^0.29"
 Cython = "^0.29.21"
+click = "^7.1.2"
+pymitter = "^0.3.0"
 
 [tool.poetry.dev-dependencies]
 black = "^20.8b1"

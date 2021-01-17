@@ -1,30 +1,18 @@
-from PySide2.QtCore import QPoint
-from PySide2.QtGui import QGuiApplication
+from PySide2.QtGui import QWindow
 from Xlib.xobject.drawable import Window
 
-from runekit.game.instance import GameInstance, WindowPosition
-from runekit.game.qt import QtGrabMixin
+from runekit.game.instance import GameInstance
+from runekit.game.qt import QtGrabMixin, QtWindowMixin, QtWindowEventMixin
 
 
-class X11GameInstance(QtGrabMixin, GameInstance):
+class X11GameInstance(QtGrabMixin, QtWindowMixin, QtWindowEventMixin, GameInstance):
+    _xwindow: Window
+
     def __init__(self, window: Window):
-        self.window = window
-
-    def get_wid(self) -> int:
-        return self.window.id
-
-    def get_position(self) -> WindowPosition:
-        geom = self.window.get_geometry()
-        screen = QGuiApplication.screenAt(QPoint(geom.x, geom.y))
-        scaling = screen.devicePixelRatio()
-
-        return WindowPosition(
-            x=geom.x,
-            y=geom.y,
-            width=geom.width,
-            height=geom.height,
-            scaling=scaling,
-        )
+        super().__init__()
+        self._xwindow = window
+        self.qwindow = QWindow.fromWinId(self._xwindow.id)
+        self._bind_window_events()
 
     def set_taskbar_progress(self, type_, progress):
         # Not supported

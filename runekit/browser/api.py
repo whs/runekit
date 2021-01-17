@@ -2,7 +2,6 @@ import base64
 import dataclasses
 import json
 import logging
-import struct
 import time
 from typing import TYPE_CHECKING, Dict, Callable, List
 from urllib.parse import urljoin
@@ -18,15 +17,18 @@ from PySide2.QtCore import (
     Signal,
     QTimer,
 )
-from PySide2.QtGui import QGuiApplication, QCursor
+from PySide2.QtGui import QGuiApplication, QCursor, QScreen
 from PySide2.QtWebChannel import QWebChannel
 from PySide2.QtWebEngineCore import QWebEngineUrlSchemeHandler, QWebEngineUrlRequestJob
 
-from runekit.ui import tooltip
+from runekit.game.instance import WindowPosition
 from runekit.image import image_to_bgra
+from runekit.ui import tooltip
 
 if TYPE_CHECKING:
     from runekit.app.app import App
+
+TRANSFER_LIMIT = 4_000_000
 
 
 class ApiPermissionDeniedException(Exception):
@@ -39,20 +41,29 @@ class ApiPermissionDeniedException(Exception):
         self.required_permission = required_permission
 
 
-image_8bpp = struct.Struct("BBBB")
+def _image_to_stream(image: Image, x=0, y=0, width=None, height=None) -> bytes:
+    assert image.mode == "RGB" or image.mode == "RGBA"
+
+    if width is None:
+        width = image.width
+    if height is None:
+        height = image.height
+
+    if width * height * 4 > TRANSFER_LIMIT:
+        return ""
+
+    return base64.b64encode(image_to_bgra(image, x, y, width, height))
 
 
 class Alt1Api(QObject):
     app: "App"
     rpc_funcs: Dict[str, Callable]
-    transfer_limit = 4_000_000  # same as alt1
 
     _screen_info: QRect
     _bound_regions: List
-
-    screen_update_signal = Signal()
-    update_mouse_signal = Signal()
-    update_game_position_signal = Signal()
+    _game_position: WindowPosition
+    _game_active = False
+    _game_last_active = 0
 
     def __init__(self, app, **kwargs):
         super().__init__(**kwargs)
@@ -66,16 +77,26 @@ class Alt1Api(QObject):
         }
 
         self._update_screen_info()
+        gui_app = QGuiApplication.instance()
+        gui_app.screenAdded.connect(self.on_screen_update)
+        gui_app.screenRemoved.connect(self.on_screen_update)
+
+        self.app.game_instance.on("active", self.on_game_active_change)
+        self.app.game_instance.on("resize", self.on_game_resize)
+        self.app.game_instance.on("scalingChange", self.on_game_scaling_change)
+        self.app.game_instance.on("move", self.on_game_move)
+        self._game_position = self.app.game_instance.get_position()
+        self._game_active = self.app.game_instance.is_active()
 
         poll_timer = QTimer(self)
         poll_timer.setInterval(250)
 
         if self.app.has_permission("gamestate"):
             poll_timer.timeout.connect(self.update_mouse_signal)
-            poll_timer.timeout.connect(self.update_game_position_signal)
 
         poll_timer.start()
 
+    # region Utils
     def _update_screen_info(self):
         virtual_screen = QRect(0, 0, 0, 0)
 
@@ -84,22 +105,12 @@ class Alt1Api(QObject):
             virtual_screen = virtual_screen.united(geom)
 
         self._screen_info = virtual_screen
+        self.screen_update_signal.emit()
 
-    def _image_to_stream(
-        self, image: Image, x=0, y=0, width=None, height=None
-    ) -> bytes:
-        assert image.mode == "RGB" or image.mode == "RGBA"
+    screen_update_signal = Signal()
+    # endregion
 
-        if width is None:
-            width = image.width
-        if height is None:
-            height = image.height
-
-        if width * height * 4 > self.transfer_limit:
-            return ""
-
-        return base64.b64encode(image_to_bgra(image, x, y, width, height))
-
+    # region Qt Properties
     def get_screen_info_x(self):
         return self._screen_info.x()
 
@@ -142,14 +153,88 @@ class Alt1Api(QObject):
         y = value.y() - pos.y
         return (x << 16) | y
 
+    update_mouse_signal = Signal()
     mousePosition = Property(int, get_mouse_position, notify=update_mouse_signal)
 
-    def get_game_position(self):
-        pos = self.app.game_instance.get_position()
-        return json.dumps(dataclasses.asdict(pos))
+    def get_game_position_x(self):
+        return self._game_position.x
 
-    gamePosition = Property(str, get_game_position, notify=update_game_position_signal)
+    game_moved_signal = Signal()
+    gamePositionX = Property(int, get_game_position_x, notify=game_moved_signal)
 
+    def get_game_position_y(self):
+        return self._game_position.y
+
+    gamePositionY = Property(int, get_game_position_y, notify=game_moved_signal)
+
+    def get_game_position_width(self):
+        return self._game_position.width
+
+    game_resized_signal = Signal()
+    gamePositionWidth = Property(
+        int, get_game_position_width, notify=game_resized_signal
+    )
+
+    def get_game_position_height(self):
+        return self._game_position.height
+
+    gamePositionHeight = Property(
+        int, get_game_position_height, notify=game_resized_signal
+    )
+
+    def get_game_scaling(self):
+        return self._game_position.scaling
+
+    game_scaling_change_signal = Signal()
+    gameScaling = Property(int, get_game_scaling, notify=game_scaling_change_signal)
+
+    def get_game_active(self):
+        return self._game_active
+
+    game_active_change_signal = Signal()
+    gameActive = Property(bool, get_game_active, notify=game_active_change_signal)
+
+    def get_game_last_active(self):
+        return int(self._game_last_active * 1000)
+
+    gameLastActive = Property(
+        int, get_game_last_active, notify=game_active_change_signal
+    )
+    # endregion
+
+    # region Sync RPC handlers
+    def get_region(self, x, y, w, h):
+        if not self.app.has_permission("pixel"):
+            raise ApiPermissionDeniedException("pixel")
+
+        return _image_to_stream(self.app.game_instance.grab_region(x, y, w, h))
+
+    def bind_region(self, x, y, w, h):
+        if not self.app.has_permission("pixel"):
+            return 0
+
+        # Alt1 only support one region
+        self._bound_regions = [self.app.game_instance.grab_region(x, y, w, h)]
+        return 1
+
+    def bind_get_region(self, id, x, y, w, h):
+        if not self.app.has_permission("pixel"):
+            raise ApiPermissionDeniedException("pixel")
+
+        if id == 0:
+            return ""
+
+        try:
+            image = self._bound_regions[id - 1]
+        except IndexError:
+            print("no img index %d" % id)
+            return ""
+
+        return _image_to_stream(image, x, y, w, h)
+
+    # endregion
+
+    # region Async RPC handlers (Slots)
     @Slot(str)
     def setTooltip(self, text: str):
         if not self.app.has_permission("overlay"):
@@ -177,34 +262,35 @@ class Alt1Api(QObject):
         }
         self.app.game_instance.set_taskbar_progress(type_map[type_], progress)
 
-    def get_region(self, x, y, w, h):
-        if not self.app.has_permission("pixel"):
-            raise ApiPermissionDeniedException("pixel")
+    # endregion
 
-        return self._image_to_stream(self.app.game_instance.grab_region(x, y, w, h))
+    # region Event handlers
+    @Slot(QScreen)
+    def on_screen_update(self, _):
+        self._update_screen_info()
 
-    def bind_region(self, x, y, w, h):
-        if not self.app.has_permission("pixel"):
-            return 0
+    def on_game_active_change(self, active):
+        if not active:
+            self._game_last_active = time.time()
 
-        # Alt1 only support one region
-        self._bound_regions = [self.app.game_instance.grab_region(x, y, w, h)]
-        return 1
+        self._game_active = active
+        self.game_active_change_signal.emit()
 
-    def bind_get_region(self, id, x, y, w, h):
-        if not self.app.has_permission("pixel"):
-            raise ApiPermissionDeniedException("pixel")
+    def on_game_resize(self, size):
+        self._game_position.width = size[0]
+        self._game_position.height = size[1]
+        self.game_resized_signal.emit()
 
-        if id == 0:
-            return ""
+    def on_game_scaling_change(self, scale):
+        self._game_position.scaling = scale
+        self.game_scaling_change_signal.emit()
 
-        try:
-            image = self._bound_regions[id - 1]
-        except IndexError:
-            print("no img index %d" % id)
-            return ""
+    def on_game_move(self, pos):
+        self._game_position.x = pos[0]
+        self._game_position.y = pos[1]
+        self.game_moved_signal.emit()
 
-        return self._image_to_stream(image, x, y, w, h)
+    # endregion
 
 
 class Alt1WebChannel(QWebChannel):

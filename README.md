@@ -19,11 +19,10 @@ Requires Qt5 to be installed
 poetry install --no-dev
 poetry build
 cp build/lib.*/runekit/image/*.cpython*.* runekit/image/
-python main.py
+python main.py https://runeapps.org/apps/alt1/afkscape/appconfig.json
 ```
 
 WIP Instruction:
 
-- Change the app URL in main.py
 - Run RuneScape before starting!!
 - Game window MUST be ENTIRELY visible. (No minimize, no other window on top, including RuneKit)

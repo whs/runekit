@@ -1,20 +1,11 @@
 import logging
-import typing
 from typing import Optional, TYPE_CHECKING
 
 import requests
 from PySide2.QtCore import QSize, Qt, QRunnable, Slot, QObject, Signal, QThreadPool
 from PySide2.QtGui import QIcon, QPixmap
-from PySide2.QtWebEngineWidgets import QWebEngineView, QWebEnginePage
-from PySide2.QtWidgets import QMainWindow
 
 from runekit.app.view.browser_window import BrowserWindow
-from runekit.app.view.popup_window import PopupWindow
-from runekit.browser import Alt1WebChannel
-
-if TYPE_CHECKING:
-    # circulars
-    from runekit.app.app import App
 
 
 class AppWindow(BrowserWindow):

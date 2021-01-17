@@ -1,13 +1,10 @@
-from cpython cimport array
-import array
+from cpython.mem cimport PyMem_Malloc, PyMem_Free
 
 cdef struct ImageRGBA:
     unsigned char r
     unsigned char g
     unsigned char b
     unsigned char a
-
-cdef array.array template_array = array.array('B')
 
 def image_to_bgra(image):
     ptr = dict(image.im.unsafe_ptrs)['image32']
@@ -17,9 +14,8 @@ def image_to_bgra(image):
     cdef unsigned long width = image.width
     cdef unsigned long height = image.height
 
-    # FIXME: just use native type?
-    cdef array.array buf_array = array.clone(template_array, width * height * 4, 0)
-    cdef unsigned char *buf = buf_array.data.as_uchars
+    cdef size_t size = width * height * 4
+    cdef unsigned char *buf = <unsigned char*> PyMem_Malloc(size)
 
     cdef size_t index, x, y
     cdef unsigned char r, g, b, a
@@ -38,4 +34,7 @@ def image_to_bgra(image):
                 buf[index+2] = r
                 buf[index+3] = a
 
-    return buf_array.tobytes()
+    try:
+        return buf[:size]
+    finally:
+        PyMem_Free(buf)

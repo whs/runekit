@@ -1,12 +1,7 @@
 import typing
 
-try:
-    TypedDict = typing.TypedDict
-except AttributeError:
-    TypedDict = typing.Dict
 
-
-class AppManifest(TypedDict):
+class AppManifest(typing.TypedDict):
     appName: str
     description: str
     """app startup url relative to current domain"""
@@ -26,7 +21,7 @@ class AppManifest(TypedDict):
     permissions: str
 
 
-class RequestHandler(TypedDict):
+class RequestHandler(typing.TypedDict):
     handlerName: str
     handlerUrl: str
     handlerScript: str

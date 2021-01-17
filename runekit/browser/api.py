@@ -184,7 +184,7 @@ class Alt1Api(QObject):
         return self._game_position.scaling
 
     game_scaling_change_signal = Signal()
-    gameScaling = Property(int, get_game_scaling, notify=game_scaling_change_signal)
+    gameScaling = Property(float, get_game_scaling, notify=game_scaling_change_signal)
 
     def get_game_active(self):
         return self._game_active

@@ -11,7 +11,7 @@ class WindowPosition:
     y: int
     width: int
     height: int
-    scaling: int
+    scaling: float
 
 
 class GameInstance(EventEmitter, abc.ABC):

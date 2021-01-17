@@ -6,10 +6,19 @@ cdef struct ImageRGBA:
     unsigned char b
     unsigned char a
 
-def image_to_bgra(image, size_t ix, size_t iy, unsigned long w, unsigned long h):
+def image_to_bgra(image, long ix, long iy, unsigned long w, unsigned long h):
     ptr = dict(image.im.unsafe_ptrs)['image32']
     cdef size_t ptr_int = <size_t> ptr
     cdef ImageRGBA **image32 = <ImageRGBA**> ptr_int
+
+    if ix < 0:
+        ix = 0
+    if iy < 0:
+        iy = 0
+    if ix + w > image.width:
+        w = image.width - ix
+    if iy + h > image.height:
+        h = image.height - iy
 
     cdef size_t size = w * h * 4
     cdef unsigned char *buf = <unsigned char*> PyMem_Malloc(size)
@@ -18,9 +27,9 @@ def image_to_bgra(image, size_t ix, size_t iy, unsigned long w, unsigned long h)
     cdef unsigned char r, g, b, a
 
     with nogil:
-        for y in range(iy, h):
-            for x in range(ix, w):
-                index = ((y * w) + x) * 4
+        for y in range(iy, iy+h):
+            for x in range(ix, ix+w):
+                index = (((y-iy) * w) + (x-ix)) * 4
                 r = image32[y][x].r
                 g = image32[y][x].g
                 b = image32[y][x].b

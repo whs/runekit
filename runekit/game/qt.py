@@ -1,8 +1,12 @@
 import abc
+import logging
 import time
 
 from PIL import Image
 from PySide2.QtGui import QGuiApplication
+
+_debug_dump_file = False
+logger = logging.getLogger(__name__)
 
 
 class QtGrabMixin(abc.ABC):
@@ -23,6 +27,10 @@ class QtGrabMixin(abc.ABC):
         pixmap = screen.grabWindow(self.get_wid())
         image = Image.fromqpixmap(pixmap)
 
+        if _debug_dump_file:
+            logger.debug("dumping file")
+            pixmap.save("qtshot.bmp", None, 100)
+
         self.__game_last_image = image
         self.__game_last_grab = time.monotonic()
         return self.__game_last_image
@@ -31,4 +39,9 @@ class QtGrabMixin(abc.ABC):
         screen = QGuiApplication.primaryScreen()
         pixmap = screen.grabWindow(0, x, y, w, h)
         image = Image.fromqpixmap(pixmap)
+
+        if _debug_dump_file:
+            logger.debug("dumping file")
+            pixmap.save("qtshot.bmp", None, 100)
+
         return image

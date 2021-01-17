@@ -59,6 +59,17 @@
         rsPing: 0,
         rsFps: 60,
         openInfo: '{}',
+        events: {
+            alt1pressed: [],
+            menudetected: [],
+            rslinked: [],
+            rsunlinked: [],
+            permissionchanged: [],
+            daemonrun: [],
+            userevent: [],
+            rsfocus: [],
+            rsblur: [],
+        },
 
         get screenX() {
             if(!syncChan) return 0;

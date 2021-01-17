@@ -45,6 +45,7 @@ image_8bpp = struct.Struct("BBBB")
 class Alt1Api(QObject):
     app: "App"
     rpc_funcs: Dict[str, Callable]
+    transfer_limit = 4_000_000  # same as alt1
 
     _screen_info: QRect
     _bound_regions: List
@@ -71,6 +72,7 @@ class Alt1Api(QObject):
 
         if self.app.has_permission("gamestate"):
             poll_timer.timeout.connect(self.update_mouse_signal)
+            poll_timer.timeout.connect(self.update_game_position_signal)
 
         poll_timer.start()
 
@@ -83,10 +85,20 @@ class Alt1Api(QObject):
 
         self._screen_info = virtual_screen
 
-    def _image_to_stream(self, image: Image) -> bytes:
+    def _image_to_stream(
+        self, image: Image, x=0, y=0, width=None, height=None
+    ) -> bytes:
         assert image.mode == "RGB" or image.mode == "RGBA"
 
-        return base64.b64encode(image_to_bgra(image))
+        if width is None:
+            width = image.width
+        if height is None:
+            height = image.height
+
+        if width * height * 4 > self.transfer_limit:
+            return ""
+
+        return base64.b64encode(image_to_bgra(image, x, y, width, height))
 
     def get_screen_info_x(self):
         return self._screen_info.x()
@@ -120,8 +132,15 @@ class Alt1Api(QObject):
             return 0
 
         value = QCursor.pos()
-        # TODO: Make it relative to game window
-        return (value.x() << 16) | value.y()
+        pos = self.app.game_instance.get_position()
+
+        if not QRect(pos.x, pos.y, pos.width, pos.height).contains(value, True):
+            # Cursor is out of game
+            return 0
+
+        x = value.x() - pos.x
+        y = value.y() - pos.y
+        return (x << 16) | y
 
     mousePosition = Property(int, get_mouse_position, notify=update_mouse_signal)
 
@@ -185,7 +204,7 @@ class Alt1Api(QObject):
             print("no img index %d" % id)
             return ""
 
-        return self._image_to_stream(image.crop((x, y, x + w, y + h)))
+        return self._image_to_stream(image, x, y, w, h)
 
 
 class Alt1WebChannel(QWebChannel):

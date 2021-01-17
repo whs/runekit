@@ -9,10 +9,10 @@ try:
 except ImportError:
     logging.warning("Cannot import native image code, using pure python")
 
-    def image_to_bgra(image: "Image") -> bytes:
-        buf = bytearray(image.width * image.height * image_8bpp.size)
+    def image_to_bgra(image: "Image", x, y, w, h) -> bytes:
+        buf = bytearray(width * height * image_8bpp.size)
         index = 0
-        for p in image.getdata():
+        for p in image.crop((x, y, x + w, y + h)).getdata():
             r = p[0]
             g = p[1]
             b = p[2]

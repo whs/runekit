@@ -4,6 +4,7 @@ from typing import List, Dict
 from Xlib import X
 from Xlib.display import Display
 from Xlib.ext import xinput, ge
+from Xlib.protocol import event
 from Xlib.xobject.drawable import Window
 
 from .instance import GameInstance, X11GameInstance
@@ -16,13 +17,18 @@ class X11EventThread(threading.Thread):
         self.manager = manager
         self.display = manager.display
 
-        self.handlers = {ge.GenericEventCode: self.dispatch_ge}
+        self.handlers = {
+            ge.GenericEventCode: self.dispatch_ge,
+            X.PropertyNotify: self.on_property_change,
+        }
         self.ge_handlers = {xinput.KeyRelease: self.on_key_release}
+        self.active_win_id = self.manager.get_active_window()
+
+        self._NET_ACTIVE_WINDOW = self.display.get_atom("_NET_ACTIVE_WINDOW")
 
     def run(self):
         root = self.display.screen().root
-        # root.change_attributes(event_mask=X.PropertyChangeMask | xinput.KeyReleaseMask)
-        root.change_attributes(event_mask=xinput.KeyReleaseMask)
+        root.change_attributes(event_mask=X.PropertyChangeMask)
 
         while True:
             evt = self.display.next_event()
@@ -43,6 +49,16 @@ class X11EventThread(threading.Thread):
         if evt.data.mods.effective_mods & X.Mod1Mask and evt.data.detail == 10:
             self.manager.emit("alt1")
 
+    def on_property_change(self, evt: event.PropertyNotify):
+        if evt.atom == self._NET_ACTIVE_WINDOW:
+            active_win_id = self.manager.get_active_window()
+
+            if self.active_win_id == active_win_id:
+                return
+
+            self.active_win_id = active_win_id
+            self.manager.emit("active")
+
 
 class X11GameManager(GameManager):
     display: Display
@@ -52,9 +68,11 @@ class X11GameManager(GameManager):
     def __init__(self):
         super().__init__()
         self.display = Display()
+        self._NET_ACTIVE_WINDOW = self.display.get_atom("_NET_ACTIVE_WINDOW")
         self._instance = {}
         self.event_thread = X11EventThread(self)
         self.event_thread.start()
+        self.on("active", self.broadcast_active)
 
     def get_instances(self) -> List[GameInstance]:
         out = []
@@ -74,10 +92,15 @@ class X11GameManager(GameManager):
             for child in window.query_tree().children:
                 visit(child)
 
-        for index in range(self.display.screen_count()):
-            visit(self.display.screen(index).root)
+        visit(self.display.screen().root)
 
         return out
+
+    def get_active_window(self) -> int:
+        resp = self.display.screen().root.get_full_property(
+            self._NET_ACTIVE_WINDOW, X.AnyPropertyType
+        )
+        return resp.value[0]
 
     def prepare_window(self, window: Window):
         # alt1
@@ -91,3 +114,8 @@ class X11GameManager(GameManager):
             xinput.KeyReleaseMask,
             (X.Mod1Mask,),
         )
+
+    def broadcast_active(self):
+        active_winid = self.get_active_window()
+        for id_, instance in self._instance.items():
+            instance.emit("active", active_winid == id_)

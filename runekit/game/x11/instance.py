@@ -12,16 +12,17 @@ if TYPE_CHECKING:
 
 
 class X11GameInstance(QtGrabMixin, GameInstance):
-    _xwindow: Window
+    xwindow: Window
+    manager: "X11GameManager"
 
     def __init__(self, manager: "X11GameManager", window: Window):
         super().__init__()
         self.manager = manager
-        self._xwindow = window
-        self.qwindow = QWindow.fromWinId(self._xwindow.id)
+        self.xwindow = window
+        self.qwindow = QWindow.fromWinId(self.xwindow.id)
 
     def get_position(self) -> WindowPosition:
-        geom = self._xwindow.get_geometry()
+        geom = self.xwindow.get_geometry()
 
         screen = QGuiApplication.screenAt(QPoint(geom.x, geom.y))
         scaling = screen.devicePixelRatio()
@@ -35,7 +36,7 @@ class X11GameInstance(QtGrabMixin, GameInstance):
         )
 
     def is_active(self) -> bool:
-        return True
+        return self.manager.get_active_window() == self.xwindow.id
 
     def set_taskbar_progress(self, type_, progress):
         # Not supported

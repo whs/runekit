@@ -19,6 +19,7 @@ from PySide2.QtCore import (
 from PySide2.QtGui import QGuiApplication, QCursor, QScreen
 from PySide2.QtWebChannel import QWebChannel
 from PySide2.QtWebEngineCore import QWebEngineUrlSchemeHandler, QWebEngineUrlRequestJob
+from qtutils.invoke_in_main import inmain_decorator
 
 from runekit.game.instance import WindowPosition
 from runekit.image import image_to_bgra
@@ -65,7 +66,7 @@ class Alt1Api(QObject):
     _bound_regions: List
     _game_position: WindowPosition
     _game_active = False
-    _game_last_active = 0
+    _game_last_activity = 0
 
     def __init__(self, app, **kwargs):
         super().__init__(**kwargs)
@@ -90,6 +91,7 @@ class Alt1Api(QObject):
         self.app.game_instance.manager.on("alt1", self.on_alt1)
         self._game_position = self.app.game_instance.get_position()
         self._game_active = self.app.game_instance.is_active()
+        self._game_last_activity = time.time()
 
         poll_timer = QTimer(self)
         poll_timer.setInterval(250)
@@ -198,10 +200,11 @@ class Alt1Api(QObject):
     gameActive = Property(bool, get_game_active, notify=game_active_change_signal)
 
     def get_game_last_active(self):
-        return int(self._game_last_active * 1000)
+        return int(self._game_last_activity * 1000)
 
-    gameLastActive = Property(
-        int, get_game_last_active, notify=game_active_change_signal
+    game_last_activity_signal = Signal()
+    gameLastActivity = Property(
+        "qulonglong", get_game_last_active, notify=game_last_activity_signal
     )
     # endregion
 
@@ -272,27 +275,29 @@ class Alt1Api(QObject):
     def on_screen_update(self, _):
         self._update_screen_info()
 
+    @inmain_decorator(False)
     def on_game_active_change(self, active):
-        if not active:
-            self._game_last_active = time.time()
-
         self._game_active = active
         self.game_active_change_signal.emit()
 
+    @inmain_decorator(False)
     def on_game_resize(self, size):
         self._game_position.width = size[0]
         self._game_position.height = size[1]
         self.game_resized_signal.emit()
 
+    @inmain_decorator(False)
     def on_game_scaling_change(self, scale):
         self._game_position.scaling = scale
         self.game_scaling_change_signal.emit()
 
+    @inmain_decorator(False)
     def on_game_move(self, pos):
         self._game_position.x = pos[0]
         self._game_position.y = pos[1]
         self.game_moved_signal.emit()
 
+    @inmain_decorator(False)
     def on_alt1(self):
         mouse = self.get_mouse_position()
         self.alt1Signal.emit(mouse)

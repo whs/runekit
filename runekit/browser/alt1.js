@@ -143,7 +143,7 @@
 
         get rsLastActive() {
             if(!syncChan) return 0;
-            return api.gameLastActive;
+            return new Date().getTime() - api.gameLastActive;
         },
 
         userResize(left, top, right, bottom) {

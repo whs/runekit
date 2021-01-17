@@ -16,7 +16,10 @@ class AppWindow(BrowserWindow):
     def __init__(self, **kwargs):
         # TODO: Hide from taskbar/group this as part of one big window?
         super().__init__(
-            flags=Qt.Dialog | Qt.NoDropShadowWindowHint | Qt.WindowStaysOnTopHint,
+            flags=Qt.CustomizeWindowHint
+            | Qt.WindowTitleHint
+            | Qt.WindowCloseButtonHint
+            | Qt.NoDropShadowWindowHint,
             **kwargs
         )
         self.pool = QThreadPool()

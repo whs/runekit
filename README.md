@@ -6,8 +6,18 @@ Alt1-compatible toolbox for RuneScape 3, for Linux.
 
 ## What works
 
-- Clue solver
+- Clue solver (not tested: sliding puzzle)
 - Example app
+- AfkWarden
+  - [ ] Inactive
+  - [ ] XP Counter
+  - [x] Chatbox
+  - [x] Crafting menu
+  - [x] Buffs
+  - [x] Action bar stats
+  - [x] Dialog box
+  - [x] Target death
+  - I don't use these, please test: Sheathe stance, Castle Wars, Fight kiln waves, Target death, Item drops
 
 ## Running
 

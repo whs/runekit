@@ -1,3 +1,4 @@
+import os
 import logging
 import sys
 
@@ -35,6 +36,7 @@ def main(app_url, game_index, qt_args):
     host.start_app(app_url, game)
 
     app.exec_()
+    sys.exit(0)
 
 
 if __name__ == "__main__":

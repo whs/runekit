@@ -1,3 +1,5 @@
+from typing import TYPE_CHECKING
+
 from PySide2.QtCore import QPoint
 from PySide2.QtGui import QWindow, QGuiApplication
 from Xlib.xobject.drawable import Window
@@ -5,12 +7,16 @@ from Xlib.xobject.drawable import Window
 from runekit.game.instance import GameInstance, WindowPosition
 from runekit.game.qt import QtGrabMixin
 
+if TYPE_CHECKING:
+    from .manager import X11GameManager
+
 
 class X11GameInstance(QtGrabMixin, GameInstance):
     _xwindow: Window
 
-    def __init__(self, window: Window):
+    def __init__(self, manager: "X11GameManager", window: Window):
         super().__init__()
+        self.manager = manager
         self._xwindow = window
         self.qwindow = QWindow.fromWinId(self._xwindow.id)
 

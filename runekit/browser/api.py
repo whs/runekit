@@ -53,6 +53,10 @@ def _image_to_stream(image: Image, x=0, y=0, width=None, height=None) -> bytes:
     return base64.b64encode(image_to_bgra(image, x, y, width, height))
 
 
+def encode_mouse(x: int, y: int) -> int:
+    return (x << 16) | y
+
+
 class Alt1Api(QObject):
     app: "App"
     rpc_funcs: Dict[str, Callable]
@@ -83,6 +87,7 @@ class Alt1Api(QObject):
         self.app.game_instance.on("resize", self.on_game_resize)
         self.app.game_instance.on("scalingChange", self.on_game_scaling_change)
         self.app.game_instance.on("move", self.on_game_move)
+        self.app.game_instance.manager.on("alt1", self.on_alt1)
         self._game_position = self.app.game_instance.get_position()
         self._game_active = self.app.game_instance.is_active()
 
@@ -149,7 +154,7 @@ class Alt1Api(QObject):
 
         x = value.x() - pos.x
         y = value.y() - pos.y
-        return (x << 16) | y
+        return encode_mouse(x, y)
 
     update_mouse_signal = Signal()
     mousePosition = Property(int, get_mouse_position, notify=update_mouse_signal)
@@ -288,6 +293,11 @@ class Alt1Api(QObject):
         self._game_position.y = pos[1]
         self.game_moved_signal.emit()
 
+    def on_alt1(self):
+        mouse = self.get_mouse_position()
+        self.alt1Signal.emit(mouse)
+
+    alt1Signal = Signal(int)
     # endregion
 
 

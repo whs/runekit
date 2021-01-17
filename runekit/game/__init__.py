@@ -1,6 +1,6 @@
 import sys
 from .instance import GameInstance
-from .manage import GameManager
+from .manager import GameManager
 
 
 def get_platform_manager() -> GameManager:

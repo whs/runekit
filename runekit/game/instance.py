@@ -1,8 +1,13 @@
 import abc
 import dataclasses
+from typing import TYPE_CHECKING
+
 from pymitter import EventEmitter
 
 from PIL import Image
+
+if TYPE_CHECKING:
+    from .manager import GameManager
 
 
 @dataclasses.dataclass
@@ -16,6 +21,7 @@ class WindowPosition:
 
 class GameInstance(EventEmitter, abc.ABC):
     refresh_rate = 1000
+    manager: "GameManager"
 
     @abc.abstractmethod
     def get_position(self) -> WindowPosition:

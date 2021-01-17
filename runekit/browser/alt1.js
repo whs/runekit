@@ -42,7 +42,7 @@
         let listeners = alt1.events[param.eventName];
         for(let i = 0; i < listeners.length; i++){
             try {
-                listeners(param);
+                listeners[i](param);
             }catch(e){
                 console.error(e);
             }
@@ -261,8 +261,9 @@
     };
 
     channel.then(function(chan){
-        chan.objects.alt1.game_active_change_signal.connect(function(){
-            let active = chan.objects.alt1.gameActive;
+        let instance = chan.objects.alt1;
+        instance.game_active_change_signal.connect(function(){
+            let active = instance.gameActive;
 
             if(active){
                 emit({eventName: 'rsfocus'});
@@ -270,6 +271,37 @@
                 emit({eventName: 'rsblur'});
             }
         });
+
+        instance.alt1Signal.connect(function (pos){
+            let mouseX = pos >> 16;
+            let mouseY = pos & 0xFFFF;
+            let mouseRsX = mouseX - instance.gamePositionX;
+            let mouseRsY = mouseY - instance.gamePositionY;
+            let event = {
+                eventName: 'alt1pressed',
+                text: '',
+                mouseAbs: {
+                    x: mouseX,
+                    y: mouseY,
+                },
+                mouseRs: {
+                    x: mouseRsX,
+                    y: mouseRsY,
+                },
+                x: mouseRsX,
+                y: mouseRsY,
+                rsLinked: true,
+            };
+            emit(event);
+
+            if (typeof window.alt1onrightclick !== 'undefined') {
+                try{
+                    window.alt1onrightclick(event);
+                }catch(e){
+                    console.error(e);
+                }
+            }
+        })
     });
 
 })();

@@ -1,7 +1,7 @@
 from typing import Optional, TYPE_CHECKING, List
 from urllib.parse import urljoin
 
-from PySide2.QtGui import QWindow
+from PySide2.QtCore import Qt
 
 from runekit.alt1.schema import AppManifest
 from runekit.app.view.window import AppWindow
@@ -9,9 +9,11 @@ from runekit.browser import Alt1Api, WebProfile
 
 if TYPE_CHECKING:
     from runekit.game import GameInstance
+    from runekit.host import Host
 
 
 class App:
+    host: "Host"
     manifest: AppManifest
     game_instance: "GameInstance"
     source_url: Optional[str]
@@ -19,10 +21,13 @@ class App:
     alt1api: Optional[Alt1Api] = None
     web_profile: Optional[WebProfile] = None
 
-    def __init__(self, manifest, game_instance, source_url=None):
+    def __init__(self, host, manifest, game_instance, source_url=None):
+        self.host = host
         self.manifest = manifest
         self.game_instance = game_instance
         self.source_url = source_url
+
+        self.game_instance.on("active", self.on_game_active_change)
 
     def get_window(self, **kwargs) -> AppWindow:
         self.window = AppWindow(app=self, **kwargs)
@@ -73,3 +78,14 @@ class App:
 
     def has_permission(self, name: str) -> bool:
         return name in self.permissions
+
+    def on_game_active_change(self, active):
+        if not self.window:
+            return
+
+        if active:
+            self.window.setWindowState(self.window.windowState() & ~Qt.WindowMinimized)
+        else:
+            self.window.setWindowState(self.window.windowState() | Qt.WindowMinimized)
+
+        self.window.show()

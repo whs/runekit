@@ -5,7 +5,7 @@ from PySide2.QtGui import QCursor
 from PySide2.QtWidgets import QLabel, QMainWindow
 
 
-class _TooltipManager(QMainWindow):
+class TooltipManager(QMainWindow):
     timer: QTimer
 
     pad_x = 5
@@ -52,15 +52,3 @@ class _TooltipManager(QMainWindow):
 
         pos = QCursor.pos()
         self.move(pos.x() + self.pad_x, pos.y() + self.pad_y)
-
-
-_global_tooltipmanager: Optional[_TooltipManager] = None
-
-
-def tooltip() -> _TooltipManager:
-    global _global_tooltipmanager
-    if _global_tooltipmanager:
-        return _global_tooltipmanager
-
-    _global_tooltipmanager = _TooltipManager()
-    return _global_tooltipmanager

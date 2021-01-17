@@ -1,5 +1,4 @@
 import base64
-import dataclasses
 import json
 import logging
 import time
@@ -23,7 +22,6 @@ from PySide2.QtWebEngineCore import QWebEngineUrlSchemeHandler, QWebEngineUrlReq
 
 from runekit.game.instance import WindowPosition
 from runekit.image import image_to_bgra
-from runekit.ui import tooltip
 
 if TYPE_CHECKING:
     from runekit.app.app import App
@@ -240,7 +238,7 @@ class Alt1Api(QObject):
         if not self.app.has_permission("overlay"):
             raise ApiPermissionDeniedException("overlay")
 
-        tooltip().set_tooltip(str(text))
+        self.app.host.notifier.notify(str(text))
 
     @Slot(str)
     def identifyAppUrl(self, url):

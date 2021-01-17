@@ -1,1 +1,1 @@
-from .tooltip import tooltip
+from .notify import AutoNotifier, Notifier, TooltipNotifier, TrayIconNotifier

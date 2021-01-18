@@ -14,8 +14,8 @@ from .instance import GameInstance, X11GameInstance
 
 
 class X11EventWorker(QObject):
-    on_active_changed = Signal()
-    on_alt1 = Signal()
+    on_active_window_changed = Signal(int)
+    on_alt1 = Signal(int)
 
     def __init__(self, manager: "X11GameManager", **kwargs):
         super().__init__(**kwargs)
@@ -27,7 +27,7 @@ class X11EventWorker(QObject):
             ge.GenericEventCode: self.dispatch_ge,
             X.PropertyNotify: self.on_property_change,
         }
-        self.ge_handlers = {xinput.KeyRelease: self.on_key_release}
+        self.ge_handlers = {xinput.KeyPress: self.on_key_press}
         self.active_win_id = self.manager.get_active_window()
 
         self._NET_ACTIVE_WINDOW = self.display.get_atom("_NET_ACTIVE_WINDOW")
@@ -55,10 +55,15 @@ class X11EventWorker(QObject):
         if handler:
             handler(evt)
 
-    def on_key_release(self, evt):
+    def on_key_press(self, evt):
+        window = evt.data.event
         # alt1
         if evt.data.mods.effective_mods & X.Mod1Mask and evt.data.detail == 10:
-            self.on_alt1.emit()
+            self.on_alt1.emit(window.id)
+            self.logger.debug("alt1 pressed %s", repr(evt))
+
+        window.xinput_ungrab_keycode(evt.data.deviceid, evt.data.detail, (X.Mod1Mask,))
+        self.manager._setup_grab(window)
 
     def on_property_change(self, evt: event.PropertyNotify):
         if evt.atom == self._NET_ACTIVE_WINDOW:
@@ -68,13 +73,16 @@ class X11EventWorker(QObject):
                 return
 
             self.active_win_id = active_win_id
-            self.on_active_changed.emit()
+            self.logger.debug(
+                "Active window changed to %d - %s", active_win_id, repr(evt)
+            )
+            self.on_active_window_changed.emit(active_win_id)
 
 
 class X11GameManager(GameManager):
     display: Display
 
-    _instance: Dict[int, GameInstance]
+    _instance: Dict[int, X11GameInstance]
 
     def __init__(self, **kwargs):
         super().__init__(*kwargs)
@@ -87,7 +95,10 @@ class X11GameManager(GameManager):
         self.event_worker = X11EventWorker(self)
         self.event_worker.moveToThread(self.event_thread)
         self.event_thread.started.connect(self.event_worker.run)
-        self.event_worker.on_active_changed.connect(self.on_active_window_changed)
+        self.event_worker.on_active_window_changed.connect(
+            self.on_active_window_changed
+        )
+        self.event_worker.on_alt1.connect(self.on_alt1)
 
         self.event_thread.start()
 
@@ -102,10 +113,9 @@ class X11GameManager(GameManager):
 
             if wm_class and wm_class[0] == "RuneScape":
                 if window.id not in self._instance:
-                    self.prepare_window(window)
-                    self._instance[window.id] = X11GameInstance(
-                        self, window, parent=self
-                    )
+                    instance = X11GameInstance(self, window, parent=self)
+                    self._setup_grab(window)
+                    self._instance[window.id] = instance
                 out.append(self._instance[window.id])
 
             for child in window.query_tree().children:
@@ -115,13 +125,7 @@ class X11GameManager(GameManager):
 
         return out
 
-    def get_active_window(self) -> int:
-        resp = self.display.screen().root.get_full_property(
-            self._NET_ACTIVE_WINDOW, X.AnyPropertyType
-        )
-        return resp.value[0]
-
-    def prepare_window(self, window: Window):
+    def _setup_grab(self, window: Window):
         # alt1
         window.xinput_grab_keycode(
             xinput.AllDevices,
@@ -130,12 +134,27 @@ class X11GameManager(GameManager):
             xinput.GrabModeAsync,
             xinput.GrabModeAsync,
             True,
-            xinput.KeyReleaseMask,
+            xinput.KeyPressMask,
             (X.Mod1Mask,),
         )
 
-    @Slot()
-    def on_active_window_changed(self):
-        active_winid = self.get_active_window()
+    def get_active_window(self) -> int:
+        resp = self.display.screen().root.get_full_property(
+            self._NET_ACTIVE_WINDOW, X.AnyPropertyType
+        )
+        return resp.value[0]
+
+    @Slot(int)
+    def on_active_window_changed(self, winid):
         for id_, instance in self._instance.items():
-            instance.activeChanged.emit(active_winid == id_)
+            active = winid == id_
+
+            if active != instance._is_active:
+                instance.activeChanged.emit(active)
+
+            instance._is_active = active
+
+    @Slot(int)
+    def on_alt1(self, winid):
+        if winid in self._instance:
+            self._instance[winid].alt1_pressed.emit()

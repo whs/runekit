@@ -7,8 +7,6 @@ from .instance import GameInstance
 
 
 class GameManager(QObject):
-    alt1Pressed = Signal()
-
     @abc.abstractmethod
     def get_instances(self) -> List[GameInstance]:
         ...

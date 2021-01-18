@@ -14,6 +14,8 @@ class GameInstance(QObject):
     refresh_rate = 1000
     manager: "GameManager"
 
+    alt1_pressed = Signal()
+
     @abc.abstractmethod
     def get_position(self) -> QRect:
         ...

@@ -21,16 +21,19 @@ from runekit.host import Host
 def main(app_url, game_index, qt_args):
     logging.basicConfig(level=logging.DEBUG)
 
-    logging.debug("Starting QtWebEngine")
+    logging.info("Starting QtWebEngine")
     QtWebEngine.initialize()
     init()
     app = QApplication([sys.argv[0], *qt_args])
     host = Host()
 
     game_manager = get_platform_manager()
-    game = game_manager.get_instances()[game_index]
+    logging.info("Scanning for game instances")
+    game_instances = game_manager.get_instances()
+    logging.info("Found %d instances", len(game_instances))
+    game = game_instances[game_index]
 
-    logging.debug("Loading app")
+    logging.info("Loading app")
     host.start_app(app_url, game)
 
     app.exec_()

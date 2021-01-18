@@ -292,7 +292,7 @@ class Alt1ApiPrivate(QObject):
         self.api.app.game_instance.activeChanged.connect(self.on_game_active_change)
         self.api.app.game_instance.positionChanged.connect(self.on_game_position_change)
         self.api.app.game_instance.scalingChanged.connect(self.on_game_scaling_change)
-        self.api.app.game_instance.manager.alt1Pressed.connect(self.on_alt1)
+        self.api.app.game_instance.alt1_pressed.connect(self.on_alt1)
 
     @Slot(QScreen)
     def on_screen_update(self, _):

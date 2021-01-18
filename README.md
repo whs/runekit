@@ -26,7 +26,7 @@ This project use [Poetry](https://python-poetry.org) as package manager.
 Requires Qt5 to be installed
 
 ```sh
-poetry install --no-dev
+poetry install
 poetry build
 cp build/lib.*/runekit/image/*.cpython*.* runekit/image/
 python main.py https://runeapps.org/apps/alt1/afkscape/appconfig.json

@@ -27,6 +27,3 @@ class Host(QWidget):
             source_url=manifest_url,
         )
         app.get_window(parent=self).show()
-
-    def get_notifier(self):
-        pass

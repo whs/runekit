@@ -65,14 +65,14 @@ class X11GameManager(GameManager):
 
     _instance: Dict[int, GameInstance]
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, **kwargs):
+        super().__init__(*kwargs)
         self.display = Display()
         self._NET_ACTIVE_WINDOW = self.display.get_atom("_NET_ACTIVE_WINDOW")
         self._instance = {}
-        self.event_thread = X11EventThread(self)
-        self.event_thread.start()
-        self.on("active", self.broadcast_active)
+        # self.event_thread = X11EventThread(self)
+        # self.event_thread.start()
+        # self.on("active", self.broadcast_active)
 
     def get_instances(self) -> List[GameInstance]:
         out = []
@@ -86,7 +86,9 @@ class X11GameManager(GameManager):
             if wm_class and wm_class[0] == "RuneScape":
                 if window.id not in self._instance:
                     self.prepare_window(window)
-                    self._instance[window.id] = X11GameInstance(self, window)
+                    self._instance[window.id] = X11GameInstance(
+                        self, window, parent=self
+                    )
                 out.append(self._instance[window.id])
 
             for child in window.query_tree().children:

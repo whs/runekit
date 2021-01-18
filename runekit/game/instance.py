@@ -2,7 +2,7 @@ import abc
 import dataclasses
 from typing import TYPE_CHECKING
 
-from pymitter import EventEmitter
+from PySide2.QtCore import QObject, Signal, Property, QRect
 
 from PIL import Image
 
@@ -10,26 +10,30 @@ if TYPE_CHECKING:
     from .manager import GameManager
 
 
-@dataclasses.dataclass
-class WindowPosition:
-    x: int
-    y: int
-    width: int
-    height: int
-    scaling: float
-
-
-class GameInstance(EventEmitter, abc.ABC):
+class GameInstance(QObject):
     refresh_rate = 1000
     manager: "GameManager"
 
     @abc.abstractmethod
-    def get_position(self) -> WindowPosition:
+    def get_position(self) -> QRect:
         ...
+
+    positionChanged = Signal(QRect)
+    position = Property(QRect, get_position, notify=positionChanged)
+
+    @abc.abstractmethod
+    def get_scaling(self) -> float:
+        ...
+
+    scalingChanged = Signal(float)
+    scaling = Property(float, get_scaling, notify=scalingChanged)
 
     @abc.abstractmethod
     def is_active(self) -> bool:
         ...
+
+    activeChanged = Signal(bool)
+    active = Property(bool, is_active, notify=activeChanged)
 
     @abc.abstractmethod
     def grab_game(self) -> Image:

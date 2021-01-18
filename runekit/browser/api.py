@@ -19,9 +19,7 @@ from PySide2.QtCore import (
 from PySide2.QtGui import QGuiApplication, QCursor, QScreen
 from PySide2.QtWebChannel import QWebChannel
 from PySide2.QtWebEngineCore import QWebEngineUrlSchemeHandler, QWebEngineUrlRequestJob
-from qtutils.invoke_in_main import inmain_decorator
 
-from runekit.game.instance import WindowPosition
 from runekit.image import image_to_bgra
 
 if TYPE_CHECKING:
@@ -62,11 +60,14 @@ class Alt1Api(QObject):
     app: "App"
     rpc_funcs: Dict[str, Callable]
 
+    alt1Signal = Signal(int)
+
     _screen_info: QRect
     _bound_regions: List
-    _game_position: WindowPosition
     _game_active = False
     _game_last_activity = 0
+    _game_position: QRect
+    _game_scaling: float
 
     def __init__(self, app, **kwargs):
         super().__init__(**kwargs)
@@ -80,24 +81,17 @@ class Alt1Api(QObject):
         }
 
         self._update_screen_info()
-        gui_app = QGuiApplication.instance()
-        gui_app.screenAdded.connect(self.on_screen_update)
-        gui_app.screenRemoved.connect(self.on_screen_update)
-
-        self.app.game_instance.on("active", self.on_game_active_change)
-        self.app.game_instance.on("resize", self.on_game_resize)
-        self.app.game_instance.on("scalingChange", self.on_game_scaling_change)
-        self.app.game_instance.on("move", self.on_game_move)
-        self.app.game_instance.manager.on("alt1", self.on_alt1)
         self._game_position = self.app.game_instance.get_position()
-        self._game_active = self.app.game_instance.is_active()
+        # self._game_active = self.app.game_instance.is_active()
         self._game_last_activity = time.time()
+        self._game_scaling = self.app.game_instance.get_scaling()
+        self._private = Alt1ApiPrivate(self, parent=self)
 
         poll_timer = QTimer(self)
         poll_timer.setInterval(250)
 
         if self.app.has_permission("gamestate"):
-            poll_timer.timeout.connect(self.update_mouse_signal)
+            poll_timer.timeout.connect(self.mouse_move_signal)
 
         poll_timer.start()
 
@@ -150,45 +144,48 @@ class Alt1Api(QObject):
         value = QCursor.pos()
         pos = self.app.game_instance.get_position()
 
-        if not QRect(pos.x, pos.y, pos.width, pos.height).contains(value, True):
+        if not pos.contains(value, True):
             # Cursor is out of game
             return 0
 
-        x = value.x() - pos.x
-        y = value.y() - pos.y
+        x = value.x() - pos.x()
+        y = value.y() - pos.y()
         return encode_mouse(x, y)
 
-    update_mouse_signal = Signal()
-    mousePosition = Property(int, get_mouse_position, notify=update_mouse_signal)
+    mouse_move_signal = Signal()
+    mousePosition = Property(int, get_mouse_position, notify=mouse_move_signal)
 
     def get_game_position_x(self):
-        return self._game_position.x
+        return self._game_position.x()
 
-    game_moved_signal = Signal()
-    gamePositionX = Property(int, get_game_position_x, notify=game_moved_signal)
+    game_position_changed_signal = Signal()
+    gamePositionX = Property(
+        int, get_game_position_x, notify=game_position_changed_signal
+    )
 
     def get_game_position_y(self):
-        return self._game_position.y
+        return self._game_position.y()
 
-    gamePositionY = Property(int, get_game_position_y, notify=game_moved_signal)
+    gamePositionY = Property(
+        int, get_game_position_y, notify=game_position_changed_signal
+    )
 
     def get_game_position_width(self):
-        return self._game_position.width
+        return self._game_position.width()
 
-    game_resized_signal = Signal()
     gamePositionWidth = Property(
-        int, get_game_position_width, notify=game_resized_signal
+        int, get_game_position_width, notify=game_position_changed_signal
     )
 
     def get_game_position_height(self):
-        return self._game_position.height
+        return self._game_position.height()
 
     gamePositionHeight = Property(
-        int, get_game_position_height, notify=game_resized_signal
+        int, get_game_position_height, notify=game_position_changed_signal
     )
 
     def get_game_scaling(self):
-        return self._game_position.scaling
+        return self._game_scaling
 
     game_scaling_change_signal = Signal()
     gameScaling = Property(float, get_game_scaling, notify=game_scaling_change_signal)
@@ -254,7 +251,7 @@ class Alt1Api(QObject):
         joined_url = urljoin(self.app.absolute_app_url, url)
         # TODO
 
-    @Slot(int, int)
+    @Slot(int, int)  # FIXME: This can be null
     def setTaskbarProgress(self, type_: int, progress: int):
         if not self.app.has_permission("overlay"):
             raise ApiPermissionDeniedException("overlay")
@@ -270,40 +267,49 @@ class Alt1Api(QObject):
 
     # endregion
 
-    # region Event handlers
+
+class Alt1ApiPrivate(QObject):
+    """Alt1Api private parts that cannot be called from the web """
+
+    api: Alt1Api
+
+    def __init__(self, api, **kwargs):
+        super().__init__(**kwargs)
+        self.api = api
+
+        gui_app = QGuiApplication.instance()
+
+        gui_app.screenAdded.connect(self.on_screen_update)
+        gui_app.screenRemoved.connect(self.on_screen_update)
+
+        self.api.app.game_instance.activeChanged.connect(self.on_game_active_change)
+        self.api.app.game_instance.positionChanged.connect(self.on_game_position_change)
+        self.api.app.game_instance.scalingChanged.connect(self.on_game_scaling_change)
+        self.api.app.game_instance.manager.alt1Pressed.connect(self.on_alt1)
+
     @Slot(QScreen)
     def on_screen_update(self, _):
-        self._update_screen_info()
+        self.api._update_screen_info()
 
-    @inmain_decorator(False)
+    @Slot(bool)
     def on_game_active_change(self, active):
-        self._game_active = active
+        self.api._game_active = active
         self.game_active_change_signal.emit()
 
-    @inmain_decorator(False)
-    def on_game_resize(self, size):
-        self._game_position.width = size[0]
-        self._game_position.height = size[1]
-        self.game_resized_signal.emit()
+    @Slot(QRect)
+    def on_game_position_change(self, pos):
+        self.api._game_position = pos
+        self.api.game_position_changed_signal.emit()
 
-    @inmain_decorator(False)
+    @Slot(float)
     def on_game_scaling_change(self, scale):
-        self._game_position.scaling = scale
-        self.game_scaling_change_signal.emit()
+        self.api._game_scaling = scale
+        self.api.game_scaling_change_signal.emit()
 
-    @inmain_decorator(False)
-    def on_game_move(self, pos):
-        self._game_position.x = pos[0]
-        self._game_position.y = pos[1]
-        self.game_moved_signal.emit()
-
-    @inmain_decorator(False)
+    @Slot()
     def on_alt1(self):
-        mouse = self.get_mouse_position()
-        self.alt1Signal.emit(mouse)
-
-    alt1Signal = Signal(int)
-    # endregion
+        mouse = self.api.get_mouse_position()
+        self.api.alt1Signal.emit(mouse)
 
 
 class Alt1WebChannel(QWebChannel):

@@ -1,12 +1,19 @@
 import abc
 from typing import List
 
-from pymitter import EventEmitter
+from PySide2.QtCore import QObject, Property, Signal
 
 from .instance import GameInstance
 
 
-class GameManager(EventEmitter, abc.ABC):
+class GameManager(QObject):
+    alt1Pressed = Signal()
+
     @abc.abstractmethod
     def get_instances(self) -> List[GameInstance]:
         ...
+
+    instance_added = Signal()
+    instance_removed = Signal()
+    instance_changed = Signal()
+    instances = Property(list, get_instances, notify=instance_changed)

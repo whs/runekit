@@ -9,7 +9,7 @@ _debug_dump_file = False
 logger = logging.getLogger(__name__)
 
 
-class QtBaseMixin(abc.ABC):
+class QtBaseMixin:
     qwindow: QWindow
 
 

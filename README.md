@@ -33,7 +33,9 @@ cp build/lib.*/runekit/image/*.cpython*.* runekit/image/
 python main.py https://runeapps.org/apps/alt1/afkscape/appconfig.json
 ```
 If the last line above has issues please try using this:
-```poetry run python main.py https://runeapps.org/apps/alt1/afkscape/appconfig.json```
+```
+poetry run python main.py https://runeapps.org/apps/alt1/afkscape/appconfig.json
+```
 
 All required packages should be automatically installed, however some reported requiring to `pip3 install` the below packages:
 ```click

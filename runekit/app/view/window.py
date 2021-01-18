@@ -22,7 +22,7 @@ class AppWindow(BrowserWindow):
             | Qt.NoDropShadowWindowHint,
             **kwargs
         )
-        self.pool = QThreadPool()
+        self.pool = QThreadPool(parent=self)
         self.setWindowTitle(self.app.manifest["appName"])
 
         self.logger = logging.getLogger(

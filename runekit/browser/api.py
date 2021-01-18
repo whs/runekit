@@ -2,7 +2,8 @@ import base64
 import json
 import logging
 import time
-from typing import TYPE_CHECKING, Dict, Callable, List
+import secrets
+from typing import TYPE_CHECKING, Dict, Callable, List, Optional
 from urllib.parse import urljoin
 
 from PIL import Image
@@ -15,6 +16,9 @@ from PySide2.QtCore import (
     QRect,
     Signal,
     QTimer,
+    QThreadPool,
+    QRunnable,
+    QJsonValue,
 )
 from PySide2.QtGui import QGuiApplication, QCursor, QScreen
 from PySide2.QtWebChannel import QWebChannel
@@ -251,8 +255,8 @@ class Alt1Api(QObject):
         joined_url = urljoin(self.app.absolute_app_url, url)
         # TODO
 
-    @Slot(int, int)  # FIXME: This can be null
-    def setTaskbarProgress(self, type_: int, progress: int):
+    @Slot(QJsonValue, QJsonValue)
+    def setTaskbarProgress(self, type_: QJsonValue, progress: QJsonValue):
         if not self.app.has_permission("overlay"):
             raise ApiPermissionDeniedException("overlay")
 
@@ -263,7 +267,10 @@ class Alt1Api(QObject):
             3: "LOADING",
             4: "PAUSED",
         }
-        self.app.game_instance.set_taskbar_progress(type_map[type_], progress)
+        # This can be called with null, but since the default value is 0 we call RESET anyway
+        self.app.game_instance.set_taskbar_progress(
+            type_map[type_.toDouble(0)], progress.toDouble(0)
+        )
 
     # endregion
 
@@ -321,6 +328,54 @@ class Alt1WebChannel(QWebChannel):
         self.registerObject("alt1", app.get_api())
 
 
+class RuneKitRequestProcessSignals(QObject):
+    successSignal = Signal(QWebEngineUrlRequestJob, bytes, bytes)
+
+
+class RuneKitRequestProcess(QRunnable):
+    def __init__(
+        self,
+        handler: "RuneKitSchemeHandler",
+        request: QWebEngineUrlRequestJob,
+        **kwargs,
+    ):
+        super().__init__(**kwargs)
+        self.handler = handler
+        self.request = request
+        self.signals = RuneKitRequestProcessSignals(parent=self.request)
+
+    def run(self):
+        try:
+            url = self.request.requestUrl()
+            data = json.loads(url.path())
+
+            func = data["func"]
+            del data["func"]
+            self.handler.logger.debug("RPC: %s(%s)", func, repr(data))
+
+            out = self.handler.api.rpc_funcs[func](**data)
+
+            if isinstance(out, str):
+                self.signals.successSignal.emit(
+                    self.request, b"text/plain", out.encode("utf-8")
+                )
+            elif isinstance(out, bytes):
+                self.signals.successSignal.emit(
+                    self.request, b"application/octet-stream", out
+                )
+            else:
+                self.signals.successSignal.emit(
+                    self.request, b"application/json", json.dumps(out).encode("ascii")
+                )
+        except:
+            self.request.fail(QWebEngineUrlRequestJob.RequestFailed)
+            self.handler.logger.error(
+                "Fail to handle request %s",
+                repr(self.request.requestUrl()),
+                exc_info=True,
+            )
+
+
 class RuneKitSchemeHandler(QWebEngineUrlSchemeHandler):
     api: Alt1Api
 
@@ -329,37 +384,22 @@ class RuneKitSchemeHandler(QWebEngineUrlSchemeHandler):
         self.api = api
         self.rpc_secret = rpc_secret
         self.logger = logging.getLogger(__name__ + "." + self.__class__.__name__)
+        self.thread_pool = QThreadPool(parent=self)
 
     def requestStarted(self, req: QWebEngineUrlRequestJob):
-        try:
-            headers = req.requestHeaders()
-            token = headers.get(QByteArray(b"token"))
-            if token != self.rpc_secret:
-                self.logger.warning("Invalid rpc secret: %s", repr(token))
-                req.fail(QWebEngineUrlRequestJob.RequestDenied)
-                return
+        headers = req.requestHeaders()
+        token = headers.get(QByteArray(b"token"))
+        if not secrets.compare_digest(token, self.rpc_secret):
+            self.logger.warning("Invalid rpc secret: %s", repr(token))
+            req.fail(QWebEngineUrlRequestJob.RequestDenied)
+            return
 
-            url = req.requestUrl()
-            data = json.loads(url.path())
+        processor = RuneKitRequestProcess(self, req, parent=req)
+        processor.signals.successSignal.connect(self.on_success)
+        self.thread_pool.start(processor)
 
-            func = data["func"]
-            del data["func"]
-            self.logger.debug("RPC: %s(%s)", func, repr(data))
-            out = self.api.rpc_funcs[func](**data)
-
-            body = QBuffer(parent=req)
-
-            if isinstance(out, str):
-                body.setData(out.encode("utf-8"))
-                req.reply(b"text/plain", body)
-            elif isinstance(out, bytes):
-                body.setData(out)
-                req.reply(b"application/octet-stream", body)
-            else:
-                body.setData(json.dumps(out).encode("ascii"))
-                req.reply(b"application/json", body)
-        except:
-            req.fail(QWebEngineUrlRequestJob.RequestFailed)
-            self.logger.error(
-                "Fail to handle request %s", repr(req.requestUrl()), exc_info=True
-            )
+    @Slot(QWebEngineUrlRequestJob, bytes, bytes)
+    def on_success(self, request, content_type, reply):
+        body = QBuffer(parent=request)
+        body.setData(reply)
+        request.reply(content_type, body)

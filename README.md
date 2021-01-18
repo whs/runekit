@@ -23,13 +23,13 @@ Alt1-compatible toolbox for RuneScape 3, for Linux.
 
 This project use [Poetry](https://python-poetry.org) as package manager.
 
-Requires Qt5 to be installed
+Requires Qt5 to be installed and Poetry 1.1
 
 ```sh
 poetry install
 poetry build
 cp build/lib.*/runekit/image/*.cpython*.* runekit/image/
-python main.py https://runeapps.org/apps/alt1/afkscape/appconfig.json
+poetry run python main.py https://runeapps.org/apps/alt1/afkscape/appconfig.json
 ```
 
 WIP Instruction:

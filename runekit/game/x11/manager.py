@@ -1,21 +1,27 @@
-import threading
+import logging
 from typing import List, Dict
 
+from PySide2.QtCore import QThread, Slot, Signal, QObject
 from Xlib import X
 from Xlib.display import Display
 from Xlib.ext import xinput, ge
 from Xlib.protocol import event
 from Xlib.xobject.drawable import Window
+import Xlib.threaded
 
-from .instance import GameInstance, X11GameInstance
 from runekit.game import GameManager
+from .instance import GameInstance, X11GameInstance
 
 
-class X11EventThread(threading.Thread):
+class X11EventWorker(QObject):
+    on_active_changed = Signal()
+    on_alt1 = Signal()
+
     def __init__(self, manager: "X11GameManager", **kwargs):
-        super().__init__(name=self.__class__.__name__, **kwargs)
+        super().__init__(**kwargs)
         self.manager = manager
         self.display = manager.display
+        self.logger = logging.getLogger(__name__ + "." + self.__class__.__name__)
 
         self.handlers = {
             ge.GenericEventCode: self.dispatch_ge,
@@ -26,6 +32,7 @@ class X11EventThread(threading.Thread):
 
         self._NET_ACTIVE_WINDOW = self.display.get_atom("_NET_ACTIVE_WINDOW")
 
+    @Slot()
     def run(self):
         root = self.display.screen().root
         root.change_attributes(event_mask=X.PropertyChangeMask)
@@ -35,9 +42,13 @@ class X11EventThread(threading.Thread):
             if evt.send_event != 0:
                 continue
 
-            handler = self.handlers.get(evt.type)
-            if handler:
-                handler(evt)
+            try:
+                handler = self.handlers.get(evt.type)
+                if handler:
+                    handler(evt)
+            except:
+                self.logger.error("Error handling event %s", repr(evt), exc_info=True)
+                continue
 
     def dispatch_ge(self, evt: ge.GenericEvent):
         handler = self.ge_handlers.get(evt.evtype)
@@ -47,7 +58,7 @@ class X11EventThread(threading.Thread):
     def on_key_release(self, evt):
         # alt1
         if evt.data.mods.effective_mods & X.Mod1Mask and evt.data.detail == 10:
-            self.manager.emit("alt1")
+            self.on_alt1.emit()
 
     def on_property_change(self, evt: event.PropertyNotify):
         if evt.atom == self._NET_ACTIVE_WINDOW:
@@ -57,7 +68,7 @@ class X11EventThread(threading.Thread):
                 return
 
             self.active_win_id = active_win_id
-            self.manager.emit("active")
+            self.on_active_changed.emit()
 
 
 class X11GameManager(GameManager):
@@ -70,9 +81,15 @@ class X11GameManager(GameManager):
         self.display = Display()
         self._NET_ACTIVE_WINDOW = self.display.get_atom("_NET_ACTIVE_WINDOW")
         self._instance = {}
-        # self.event_thread = X11EventThread(self)
-        # self.event_thread.start()
-        # self.on("active", self.broadcast_active)
+
+        self.event_thread = QThread()
+
+        self.event_worker = X11EventWorker(self)
+        self.event_worker.moveToThread(self.event_thread)
+        self.event_thread.started.connect(self.event_worker.run)
+        self.event_worker.on_active_changed.connect(self.on_active_window_changed)
+
+        self.event_thread.start()
 
     def get_instances(self) -> List[GameInstance]:
         out = []
@@ -117,7 +134,8 @@ class X11GameManager(GameManager):
             (X.Mod1Mask,),
         )
 
-    def broadcast_active(self):
+    @Slot()
+    def on_active_window_changed(self):
         active_winid = self.get_active_window()
         for id_, instance in self._instance.items():
-            instance.emit("active", active_winid == id_)
+            instance.activeChanged.emit(active_winid == id_)

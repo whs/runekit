@@ -1,13 +1,11 @@
-import os
 import logging
 import sys
 
 import click
-from PySide2.QtWidgets import QApplication
 from PySide2.QtWebEngine import QtWebEngine
+from PySide2.QtWidgets import QApplication
 
 from runekit.browser import init
-
 from runekit.game import get_platform_manager
 from runekit.host import Host
 

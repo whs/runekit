@@ -301,7 +301,7 @@ class Alt1ApiPrivate(QObject):
     @Slot(bool)
     def on_game_active_change(self, active):
         self.api._game_active = active
-        self.game_active_change_signal.emit()
+        self.api.game_active_change_signal.emit()
 
     @Slot(QRect)
     def on_game_position_change(self, pos):

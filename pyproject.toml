@@ -10,7 +10,8 @@ python = "^3.9,<3.10"
 requests = "^2.25.1"
 PySide2 = "^5.15.2"
 Pillow = "^8.1.0"
-python-xlib = "^0.29"
+python-xlib = [{ version="^0.29", platform="linux" }]
+pyobjc-framework-Quartz = [{ version="*s", platform="darwin" }]
 click = "^7.1.2"
 
 [tool.poetry.dev-dependencies]

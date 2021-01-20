@@ -3,7 +3,7 @@ import json
 import logging
 import time
 import secrets
-from typing import TYPE_CHECKING, Dict, Callable, List, Optional
+from typing import TYPE_CHECKING, Dict, Callable, List
 from urllib.parse import urljoin
 
 from PIL import Image
@@ -23,8 +23,6 @@ from PySide2.QtCore import (
 from PySide2.QtGui import QGuiApplication, QCursor, QScreen
 from PySide2.QtWebChannel import QWebChannel
 from PySide2.QtWebEngineCore import QWebEngineUrlSchemeHandler, QWebEngineUrlRequestJob
-
-from runekit.image import image_to_bgra
 
 if TYPE_CHECKING:
     from runekit.app.app import App
@@ -53,7 +51,10 @@ def _image_to_stream(image: Image, x=0, y=0, width=None, height=None) -> bytes:
     if width * height * 4 > TRANSFER_LIMIT:
         return ""
 
-    return base64.b64encode(image_to_bgra(image, x, y, width, height))
+    r, g, b, a = image.crop((x, y, x+width, y+height)).split()
+    image = Image.merge("RGBA", (b, g, r, a))
+
+    return base64.b64encode(image.tobytes())
 
 
 def encode_mouse(x: int, y: int) -> int:

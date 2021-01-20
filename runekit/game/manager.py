@@ -9,6 +9,7 @@ from .instance import GameInstance
 class GameManager(QObject):
     @abc.abstractmethod
     def get_instances(self) -> List[GameInstance]:
+        """Return a list of active game instance. The instances returned should be stable (same instance for all invocation)"""
         ...
 
     instance_added = Signal()

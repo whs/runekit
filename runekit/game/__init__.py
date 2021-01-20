@@ -8,5 +8,9 @@ def get_platform_manager() -> GameManager:
         from .x11.manager import X11GameManager
 
         return X11GameManager()
+    elif sys.platform == "darwin":
+        from .quartz.manager import QuartzGameManager
+
+        return QuartzGameManager()
 
     raise NotImplementedError

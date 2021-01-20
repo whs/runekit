@@ -103,8 +103,6 @@ class X11GameManager(GameManager):
         self.event_thread.start()
 
     def get_instances(self) -> List[GameInstance]:
-        out = []
-
         def visit(window):
             try:
                 wm_class = window.get_wm_class()
@@ -116,14 +114,13 @@ class X11GameManager(GameManager):
                     instance = X11GameInstance(self, window, parent=self)
                     self._setup_grab(window)
                     self._instance[window.id] = instance
-                out.append(self._instance[window.id])
 
             for child in window.query_tree().children:
                 visit(child)
 
         visit(self.display.screen().root)
 
-        return out
+        return list(self._instance.values())
 
     def _setup_grab(self, window: Window):
         # alt1

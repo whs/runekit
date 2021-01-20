@@ -1,8 +1,8 @@
 # RuneKit
 
-Alt1-compatible toolbox for RuneScape 3, for Linux.
+Alt1-compatible toolbox for RuneScape 3, for Linux and macOS.
 
-**In development**
+**Alpha quality software**
 
 ## What works
 

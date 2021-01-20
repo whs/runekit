@@ -51,7 +51,10 @@ def _image_to_stream(image: Image, x=0, y=0, width=None, height=None) -> bytes:
     if width * height * 4 > TRANSFER_LIMIT:
         return ""
 
-    r, g, b, a = image.crop((x, y, x+width, y+height)).split()
+    if image.mode == "RGB":
+        image = image.convert("RGBA")
+
+    r, g, b, a = image.crop((x, y, x + width, y + height)).split()
     image = Image.merge("RGBA", (b, g, r, a))
 
     return base64.b64encode(image.tobytes())

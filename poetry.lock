@@ -101,6 +101,19 @@ optional = false
 python-versions = ">=3.6"
 
 [[package]]
+name = "pyobjc-framework-applicationservices"
+version = "7.1"
+description = "Wrappers for the framework ApplicationServices on macOS"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+pyobjc-core = ">=7.1"
+pyobjc-framework-Cocoa = ">=7.1"
+pyobjc-framework-Quartz = ">=7.1"
+
+[[package]]
 name = "pyobjc-framework-cocoa"
 version = "7.1"
 description = "Wrappers for the Cocoa frameworks on macOS"
@@ -110,6 +123,19 @@ python-versions = ">=3.6"
 
 [package.dependencies]
 pyobjc-core = ">=7.1"
+
+[[package]]
+name = "pyobjc-framework-coretext"
+version = "7.1"
+description = "Wrappers for the framework CoreText on macOS"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+pyobjc-core = ">=7.1"
+pyobjc-framework-Cocoa = ">=7.1"
+pyobjc-framework-Quartz = ">=7.1"
 
 [[package]]
 name = "pyobjc-framework-quartz"
@@ -227,7 +253,7 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9,<3.10"
-content-hash = "510e229423693b99b5df3f43e08e23333c1b19900b366eec04b394a413d7a1ca"
+content-hash = "7499ffeaf18341e92d2e7b1af5f9b0a21be4b702f988fad58b589708499aed06"
 
 [metadata.files]
 appdirs = [
@@ -340,6 +366,10 @@ pyobjc-core = [
     {file = "pyobjc_core-7.1-cp39-cp39-macosx_10_9_universal2.whl", hash = "sha256:7cb329c4119044fe83bcb3c5d4794d636c706ff0cb7c1c77d36ef5c373100082"},
     {file = "pyobjc_core-7.1-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:7913d7b20217c294900537faf58e5cc15942ed7af277bf05db25667d18255114"},
 ]
+pyobjc-framework-applicationservices = [
+    {file = "pyobjc-framework-ApplicationServices-7.1.tar.gz", hash = "sha256:84d790bafa256d05121950554645f9edd2ba4c59fc2684dfdfa701e8ad28baf6"},
+    {file = "pyobjc_framework_ApplicationServices-7.1-py2.py3-none-any.whl", hash = "sha256:ef8c7729e0c5b676f3bcafff3fde3714f938b821263cc3528db0cd37c3845991"},
+]
 pyobjc-framework-cocoa = [
     {file = "pyobjc-framework-Cocoa-7.1.tar.gz", hash = "sha256:67966152b3d38a0225176fceca2e9f56d849c8e7445548da09a00cb13155ec3e"},
     {file = "pyobjc_framework_Cocoa-7.1-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:bef77eafaac5eaf1d91d479d5483fd02216caa3edc27e8f5adc9af0b3fecdac3"},
@@ -347,6 +377,14 @@ pyobjc-framework-cocoa = [
     {file = "pyobjc_framework_Cocoa-7.1-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:1a4050f2d776f40c2409a151c6f7896420e936934b3bdbfabedf91509637ed9b"},
     {file = "pyobjc_framework_Cocoa-7.1-cp39-cp39-macosx_10_9_universal2.whl", hash = "sha256:3f68f022f1f6d5985c418e10c6608c562fcf4bfe3714ec64fd10ce3dc6221bd4"},
     {file = "pyobjc_framework_Cocoa-7.1-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:ecfefd4c48dae42275c18679c69f6f2fff970e711097515a0a8732fc10194018"},
+]
+pyobjc-framework-coretext = [
+    {file = "pyobjc-framework-CoreText-7.1.tar.gz", hash = "sha256:f3682299f02e75b4d5c7b0ede216e1cea3556ede0fc98a5319e7c2d359b140a7"},
+    {file = "pyobjc_framework_CoreText-7.1-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:83b8bd84fa7666983ba2ed1d8cf7d0cc67e1c2190f5b59c1f026806da896146e"},
+    {file = "pyobjc_framework_CoreText-7.1-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:171d3d60738b51b971ad4ea91016e9a2cc8164311b0aa2de34cf84da1faa7d30"},
+    {file = "pyobjc_framework_CoreText-7.1-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:d33565a158a511a2cd3ac4c15ececb5b6a033f8ead6d18ee688a6de147c52d1b"},
+    {file = "pyobjc_framework_CoreText-7.1-cp39-cp39-macosx_10_9_universal2.whl", hash = "sha256:9c8eed9c876e723a93bdff78ffd767f9da6132562702b95f3b289a9618c196a3"},
+    {file = "pyobjc_framework_CoreText-7.1-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:fd42eeaa4351c24fb3d12bf954ffb5c588d3a33ae363388c092e5bd4c5e10d27"},
 ]
 pyobjc-framework-quartz = [
     {file = "pyobjc-framework-Quartz-7.1.tar.gz", hash = "sha256:73102c9f4dbfa13275621014785ab3b684cf03ce93a4b0b270500c795349bea9"},

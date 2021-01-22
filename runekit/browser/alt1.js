@@ -49,6 +49,8 @@
         }
     }
 
+    let lastGameActivity = window.performance.now();
+
     window.alt1 = {
         overlay: {},
         version: '1.1.1',
@@ -142,8 +144,7 @@
         },
 
         get rsLastActive() {
-            if(!syncChan) return 0;
-            return new Date().getTime() - api.gameLastActive;
+            return window.performance.now() - lastGameActivity;
         },
 
         userResize(left, top, right, bottom) {
@@ -199,30 +200,40 @@
             document.title = text;
         },
 
-        // overLayRect(color, x, y, w, h, time, lineWidth) {
-        //     return false;
-        // },
-        // overLayTextEx(str, color, size, x, y, time, fontname, centered, shadow) {
-        //     return false;
-        // },
-        // overLayLine(color, width, x1, y1, x2, y2, time) {
-        //     return false;
-        // },
-        // overLayImage(x, y, imgstr, imgwidth, time) {
-        //     return false;
-        // },
-        // overLayClearGroup(group) {
-        // },
-        // overLaySetGroup(group) {
-        // },
-        // overLayFreezeGroup(group) {
-        // },
-        // overLayContinueGroup(group) {
-        // },
-        // overLayRefreshGroup(group) {
-        // },
-        // overLaySetGroupZIndex(groupname, zIndex) {
-        // },
+        overLayRect(color, x, y, w, h, time, lineWidth) {
+            console.trace('overLayRect');
+            return false;
+        },
+        overLayTextEx(str, color, size, x, y, time, fontname, centered, shadow) {
+            console.trace('overLayTextEx');
+            return false;
+        },
+        overLayLine(color, width, x1, y1, x2, y2, time) {
+            console.trace('overLayLine');
+            return false;
+        },
+        overLayImage(x, y, imgstr, imgwidth, time) {
+            console.trace('overLayImage');
+            return false;
+        },
+        overLayClearGroup(group) {
+            console.trace('overLayClearGroup');
+        },
+        overLaySetGroup(group) {
+            console.trace('overLaySetGroup');
+        },
+        overLayFreezeGroup(group) {
+            console.trace('overLayFreezeGroup');
+        },
+        overLayContinueGroup(group) {
+            console.trace('overLayContinueGroup');
+        },
+        overLayRefreshGroup(group) {
+            console.trace('overLayRefreshGroup');
+        },
+        overLaySetGroupZIndex(groupname, zIndex) {
+            console.trace('overLaySetGroupZIndex');
+        },
 
         getRegion(x, y, w, h) {
             return syncRpc({func: 'getRegion', x: x, y: y, w: w, h: h});
@@ -270,6 +281,10 @@
             }else{
                 emit({eventName: 'rsblur'});
             }
+        });
+
+        instance.game_activity_signal.connect(function(){
+           lastGameActivity = window.performance.now();
         });
 
         instance.alt1Signal.connect(function (pos){

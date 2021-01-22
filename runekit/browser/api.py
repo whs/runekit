@@ -73,7 +73,6 @@ class Alt1Api(QObject):
     _screen_info: QRect
     _bound_regions: List
     _game_active = False
-    _game_last_activity = 0
     _game_position: QRect
     _game_scaling: float
 
@@ -90,10 +89,9 @@ class Alt1Api(QObject):
 
         self._update_screen_info()
         self._game_position = self.app.game_instance.get_position()
-        # self._game_active = self.app.game_instance.is_active()
-        self._game_last_activity = time.time()
         self._game_scaling = self.app.game_instance.get_scaling()
         self._private = Alt1ApiPrivate(self, parent=self)
+        self.app.game_instance.game_activity.connect(self.game_activity_signal)
 
         poll_timer = QTimer(self)
         poll_timer.setInterval(250)
@@ -204,13 +202,7 @@ class Alt1Api(QObject):
     game_active_change_signal = Signal()
     gameActive = Property(bool, get_game_active, notify=game_active_change_signal)
 
-    def get_game_last_active(self):
-        return int(self._game_last_activity * 1000)
-
-    game_last_activity_signal = Signal()
-    gameLastActivity = Property(
-        "qulonglong", get_game_last_active, notify=game_last_activity_signal
-    )
+    game_activity_signal = Signal()
     # endregion
 
     # region Sync RPC handlers
@@ -293,7 +285,7 @@ class Alt1ApiPrivate(QObject):
         gui_app.screenAdded.connect(self.on_screen_update)
         gui_app.screenRemoved.connect(self.on_screen_update)
 
-        self.api.app.game_instance.activeChanged.connect(self.on_game_active_change)
+        self.api.app.game_instance.focusChanged.connect(self.on_game_active_change)
         self.api.app.game_instance.positionChanged.connect(self.on_game_position_change)
         self.api.app.game_instance.scalingChanged.connect(self.on_game_scaling_change)
         self.api.app.game_instance.alt1_pressed.connect(self.on_alt1)

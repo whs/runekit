@@ -146,10 +146,10 @@ class X11GameManager(GameManager):
         for id_, instance in self._instance.items():
             active = winid == id_
 
-            if active != instance._is_active:
-                instance.activeChanged.emit(active)
+            if active != instance.is_focused:
+                instance.focusChanged.emit(active)
 
-            instance._is_active = active
+            instance.is_focused = active
 
     @Slot(int)
     def on_alt1(self, winid):

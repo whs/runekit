@@ -2,7 +2,7 @@ from functools import reduce
 from typing import List, Dict, Optional
 
 import Quartz
-from PySide2.QtCore import Slot, QTimer
+from PySide2.QtCore import QTimer
 from PySide2.QtGui import QDesktopServices
 from PySide2.QtWidgets import QMessageBox
 
@@ -88,8 +88,9 @@ class QuartzGameManager(GameManager):
                 and nsevent.modifierFlags() & Quartz.NSEventModifierFlagCommand
             ):
                 instance.alt1_pressed.emit()
+                return None
 
-        # TODO: Emit game activity event
+        instance.game_activity.emit()
 
         return event
 

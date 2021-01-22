@@ -21,7 +21,7 @@ class X11GameInstance(QtGrabMixin, GameInstance):
         self.manager = manager
         self.xwindow = window
         self.qwindow = QWindow.fromWinId(self.xwindow.id)
-        self._update_is_active()
+        self._update_is_focused()
 
     def get_position(self) -> QRect:
         geom = self.xwindow.get_geometry()
@@ -32,11 +32,11 @@ class X11GameInstance(QtGrabMixin, GameInstance):
         screen = QGuiApplication.screenAt(self.get_position().topLeft())
         return screen.devicePixelRatio()
 
-    def is_active(self) -> bool:
-        return self._is_active
+    def is_focused(self) -> bool:
+        return self.is_focused
 
-    def _update_is_active(self):
-        self._is_active = self.manager.get_active_window() == self.xwindow.id
+    def _update_is_focused(self):
+        self.is_focused = self.manager.get_active_window() == self.xwindow.id
 
     def set_taskbar_progress(self, type_, progress):
         # Not supported

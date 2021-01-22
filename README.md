@@ -70,8 +70,8 @@ To debug, go to `chrome://inspect` on Chrome/Chromium.
 
 This protect is [No Maintenance Intended](https://unmaintained.tech/).
 It is provided as-is and may not be actively maintained. There's no support, and no promise that pull requests will be
-reviewed and merged. In other word: I wrote this for my own use and there's no point in keeping it to myself. However,
-making it a proper open source project is an ongoing work.
+reviewed and merged. In other word: I wrote this for my own use and there's no point in keeping it to myself so I'm sharing it.
+However, making it a proper open source project is an ongoing work that I'm not willing to do.
 
 This project is [licensed](LICENSE) under GPLv3, and contains code from [third parties](THIRD_PARTY_LICENSE.md).
 Contains code from the Alt1 application.

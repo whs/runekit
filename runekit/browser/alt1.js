@@ -49,6 +49,8 @@
         }
     }
 
+    let lastGameActivity = window.performance.now();
+
     window.alt1 = {
         overlay: {},
         version: '1.1.1',
@@ -142,8 +144,7 @@
         },
 
         get rsLastActive() {
-            if(!syncChan) return 0;
-            return new Date().getTime() - api.gameLastActive;
+            return window.performance.now() - lastGameActivity;
         },
 
         userResize(left, top, right, bottom) {
@@ -270,6 +271,10 @@
             }else{
                 emit({eventName: 'rsblur'});
             }
+        });
+
+        instance.game_activity_signal.connect(function(){
+           lastGameActivity = window.performance.now();
         });
 
         instance.alt1Signal.connect(function (pos){

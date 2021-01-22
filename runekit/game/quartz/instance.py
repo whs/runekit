@@ -59,10 +59,10 @@ def on_ax_event(observer, element, notification, ptr):
 
     if notification == ApplicationServices.kAXApplicationActivatedNotification:
         self._is_active = True
-        self.activeChanged.emit(True)
+        self.focusChanged.emit(True)
     elif notification == ApplicationServices.kAXApplicationDeactivatedNotification:
         self._is_active = False
-        self.activeChanged.emit(False)
+        self.focusChanged.emit(False)
     elif notification == ApplicationServices.kAXWindowResizedNotification:
         self.positionChanged.emit(self.get_position())
     elif notification == ApplicationServices.kAXWindowMovedNotification:
@@ -134,7 +134,7 @@ class QuartzGameInstance(GameInstance):
         screen = QGuiApplication.screenAt(self.get_position().topLeft())
         return screen.devicePixelRatio()
 
-    def is_active(self) -> bool:
+    def is_focused(self) -> bool:
         return self._is_active
 
     def update_is_active(self):

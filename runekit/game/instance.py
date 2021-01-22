@@ -1,8 +1,9 @@
 import abc
 import dataclasses
+import time
 from typing import TYPE_CHECKING
 
-from PySide2.QtCore import QObject, Signal, Property, QRect
+from PySide2.QtCore import QObject, Signal, Property, QRect, Slot
 
 from PIL import Image
 
@@ -13,8 +14,23 @@ if TYPE_CHECKING:
 class GameInstance(QObject):
     refresh_rate = 1000
     manager: "GameManager"
+    _last_game_activity: float = 0
 
     alt1_pressed = Signal()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.game_activity.connect(self.on_game_activity)
+
+    def get_last_game_activity(self) -> float:
+        return self._last_game_activity
+
+    @Slot()
+    def on_game_activity(self):
+        self._last_game_activity = time.monotonic()
+
+    game_activity = Signal()
+    last_game_activity = Property(float, get_last_game_activity, notify=game_activity)
 
     @abc.abstractmethod
     def get_position(self) -> QRect:
@@ -31,11 +47,11 @@ class GameInstance(QObject):
     scaling = Property(float, get_scaling, notify=scalingChanged)
 
     @abc.abstractmethod
-    def is_active(self) -> bool:
+    def is_focused(self) -> bool:
         ...
 
-    activeChanged = Signal(bool)
-    active = Property(bool, is_active, notify=activeChanged)
+    focusChanged = Signal(bool)
+    focused = Property(bool, is_focused, notify=focusChanged)
 
     @abc.abstractmethod
     def grab_game(self) -> Image:

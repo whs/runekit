@@ -25,3 +25,19 @@ class RequestHandler(typing.TypedDict):
     handlerName: str
     handlerUrl: str
     handlerScript: str
+
+
+UnblendModes = typing.Literal["raw", "removebg", "blackbg"]
+
+
+class FontMeta(typing.TypedDict):
+    basey: int
+    spacewidth: int
+    treshold: float
+    color: typing.Tuple[int, int, int]
+    unblendmode: UnblendModes
+    shadow: bool
+    chars: str
+    seconds: str
+    img: typing.Optional[str]
+    bonus: typing.Optional[typing.Dict[str, int]]

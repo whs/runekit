@@ -1,6 +1,6 @@
 build/
 dist/
-runekit/image/format.c
-runekit/image/format.*.*
+runekit/image/*.c
+runekit/image/*.*.*
 setup.py
 *.egg-info

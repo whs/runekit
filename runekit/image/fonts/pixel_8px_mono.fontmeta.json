@@ -1,0 +1,10 @@
+{
+	"basey": 8,
+	"spacewidth": 4,
+	"treshold": 0.9,
+	"color": [ 255, 255, 255 ],
+	"unblendmode": "raw",
+	"shadow": false,
+	"chars": "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_abcdefghijklmnopqrstuvwxyz{|}~",
+	"seconds": ",.-:;\"'"
+}

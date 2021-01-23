@@ -1,0 +1,11 @@
+{
+	"basey": 15,
+	"spacewidth": 6,
+	"treshold": 0.6,
+	"color": [ 127, 169, 255 ],
+	"unblendmode": "removebg",
+	"shadow": true,
+	"chars": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789%/+?!@#$^~&*()_-=[]{}:;\"'<>\\.,|",
+	"seconds": ",.-:;\"'",
+	"//":"Seems to have a 2px letter spacing and 4px spacewidth, the letter spacing is included in the font definition after the characters"
+}

@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 
 class GameInstance(QObject):
-    refresh_rate = 1000
+    refresh_rate = 300
     manager: "GameManager"
     _last_game_activity: float = 0
 

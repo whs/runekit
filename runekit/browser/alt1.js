@@ -100,7 +100,7 @@
         },
 
         get captureInterval() {
-            if(!syncChan) return 1000;
+            if(!syncChan) return 300;
             return api.captureInterval;
         },
 

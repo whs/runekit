@@ -1,7 +1,6 @@
 import abc
-import dataclasses
 import time
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 from PySide2.QtCore import QObject, Signal, Property, QRect, Slot
 
@@ -9,6 +8,8 @@ from PIL import Image
 
 if TYPE_CHECKING:
     from .manager import GameManager
+
+PROGRESS_TYPE = Literal["RESET", "IN_PROGRESS", "ERROR", "LOADING", "PAUSED"]
 
 
 class GameInstance(QObject):
@@ -34,6 +35,7 @@ class GameInstance(QObject):
 
     @abc.abstractmethod
     def get_position(self) -> QRect:
+        """Return the game window position, without space used by window decoration"""
         ...
 
     positionChanged = Signal(QRect)
@@ -66,5 +68,5 @@ class GameInstance(QObject):
         return image.crop((x, y, x + w, y + h))
 
     @abc.abstractmethod
-    def set_taskbar_progress(self, type, progress):
+    def set_taskbar_progress(self, type_: PROGRESS_TYPE, progress: float):
         ...

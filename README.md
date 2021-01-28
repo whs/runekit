@@ -12,28 +12,35 @@ Alt1-compatible toolbox for RuneScape 3, for Linux and macOS.
 
 App                            | Linux | macOS
 -------------------------------|-------|----------
-Clue solver (Text/Emote)       | ✅    | ✅
-Clue solver (Map scroll)       | ?     | ?
-Clue solver (Compass)          | ?     | 2
-Clue solver (Scan)             | ?     | ?
-Clue solver (Lockbox)          | ?     | ?
-Clue solver (Celtic Knot)      | ?     | ✅
-Clue solver (Slide)            | ?     | ✅
-Clue solver (Towers)           | ?     | ?
+**Clue Solver**                  ||
+- Text/Emote                   | ✅    | ✅
+- Map scroll                   | ?     | ?
+- Compass                      | ?     | 2
+- Scan                         | ?     | ?
+- Lockbox                      | ?     | ?
+- Celtic knot                  | ?     | ✅
+- Slide                        | ?     | ✅
+- Towers                       | ?     | ?
 Example app                    | ✅    | ✅
-AfkWarden (Inactive)           | ❌    | ✅
-AfkWarden (XP Counter)         | ❌    | ❌
-AfkWarden (Chatbox)            | 1     | ✅
-AfkWarden (Crafting menu)      | ✅    | ✅
-AfkWarden (Buffs)              | ✅    | ✅
-AfkWarden (Action bar stats)   | ✅    | ✅
-AfkWarden (Dialog box)         | ✅    | ✅
-AfkWarden (Target death)       | ?     | ?
-AfkWarden (Sheathe stance)     | ?     | ?
-AfkWarden (Castle Wars)        | ?     | ?
-AfkWarden (Fight kiln waves)   | ?     | ?
-AfkWarden (Target death)       | ?     | ?
-AfkWarden (Item drops)         | ?     | ?
+**AfkWarden**                  ||
+- Inactive                     | ❌    | ✅
+- XP Counter                   | ❌    | ❌
+- Chatbox                      | 1     | ✅
+- Crafting menu                | ✅    | ✅
+- Buffs                        | ✅    | ✅
+- Action bar stats             | ✅    | ✅
+- Dialog box                   | ✅    | ✅
+- Target death                 | ?     | ?
+- Sheathe stance               | ?     | ?
+- Castle Wars                  | ?     | ?
+- Fight kiln waves             | ?     | ?
+- Target death                 | ?     | ?
+- Item drops                   | ?     | ?
+**DgKey**                      ||
+- Show map                     | ✅    | ?
+- Track key                    | ❌    | ?
+- Select player location       | ❌    | ?
+**[ArchMatCounter](https://zerogwafa.github.io/ArchMatCounter/appconfig.json)** | ?     | ?
 
 - 1: Can be setup but only fire once (needs inactive to work)
 - 2: Detected but cannot place mark
@@ -42,7 +49,7 @@ AfkWarden (Item drops)         | ?     | ?
 
 This project use [Poetry](https://python-poetry.org) as package manager.
 
-Requires Poetry 1.1
+Requires Poetry 1.1.
 
 ```sh
 poetry install
@@ -51,20 +58,48 @@ cp build/lib.*/runekit/image/*.cpython*.* runekit/image/
 poetry run python main.py https://runeapps.org/apps/alt1/afkscape/appconfig.json
 ```
 
-WIP Instruction:
+### Linux additional instruction
 
-- Run RuneScape before starting!!
-- Linux: Game window MUST be ENTIRELY visible. (No minimize, no other window on top, including RuneKit)
-- macOS: HiDPI (Retina) support may or may not work. Use external monitor for best result
-- macOS: You will need to add Python in System Preferences > Security > Privacy in these sections:
+Requires libxcb to be installed
+
+### macOS additional instruction
+
+You'll probably need Command Line Tools to build the C code, run: `xcode-select --install` to get it
+
+You will need to add Python in System Preferences > Security > Privacy in these sections:
   - Accessibility
-  - Screen Recording: 
-  - Note that it wmight appear as the closest macOS application (eg. your terminal emulator) instead of Python
+  - Screen Recording 
+    
+Note that Python might appear as the closest macOS application (eg. your terminal emulator) instead of Python
+
+For best result, the game window should be on non-Retina display
 
 ## Developer
 
 Start with `--remote-debugging-port=9222` to enable remote debugger protocol.
 To debug, go to `chrome://inspect` on Chrome/Chromium.
+
+## Technical Features
+
+* [Alt1 Compatibility](compatibility.md)
+
+Platform Feature              | Linux | macOS
+------------------------------|-------|--------
+**Game Manager**              ||
+Instance change signals       | ❌    | ❌
+**Instance**                  ||
+alt1_pressed                  | ❌    | ✅
+game_activity                 | ❌    | ✅
+positionChanged               | ❌    | ✅
+scalingChanged                | ❌    | ❌
+focusChanged                  | ❌    | ✅
+set_taskbar_progress          | ❌    | ❌
+Window capture                | ✅    | ✅
+
+## Known issues
+
+- On macOS some values include the size of window decorator, including the screenshot
+  - This can be tested with AfkScape color picker 
 
 ## License
 

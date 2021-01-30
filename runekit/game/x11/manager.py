@@ -37,7 +37,7 @@ class X11GameManager(GameManager):
         self.xinput = self.connection(xcffib.xinput.key)
         self._setup_composite()
 
-        self.event_thread = QThread()
+        self.event_thread = QThread(self)
 
         self.event_worker = X11EventWorker(self)
         self.event_worker.moveToThread(self.event_thread)
@@ -48,6 +48,11 @@ class X11GameManager(GameManager):
         )
 
         self.event_thread.start()
+
+    def stop(self):
+        self.event_thread.requestInterruption()
+        self.event_thread.quit()
+        self.event_thread.wait()
 
     def get_instances(self) -> List[GameInstance]:
         def visit(wid: int):
@@ -149,7 +154,6 @@ class X11GameManager(GameManager):
 
 class X11EventWorker(QObject):
     on_active_window_changed = Signal(int)
-    stop = False
 
     def __init__(self, manager: "X11GameManager", **kwargs):
         super().__init__(**kwargs)
@@ -169,12 +173,16 @@ class X11EventWorker(QObject):
             [xcffib.xproto.EventMask.PropertyChange],
             is_checked=True,
         )
+        current_thread = QThread.currentThread()
 
         while True:
-            if self.stop:
+            if current_thread.isInterruptionRequested():
                 return
 
-            evt = self.manager.connection.wait_for_event()
+            evt = self.manager.connection.poll_for_event()
+            if evt is None:
+                QThread.msleep(10)
+                continue
 
             for wanted_type, handler in self.handlers.items():
                 if isinstance(evt, wanted_type):

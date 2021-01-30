@@ -37,6 +37,7 @@ def main(app_url, game_index, qt_args):
     host.start_app(app_url, game)
 
     app.exec_()
+    game_manager.stop()
     sys.exit(0)
 
 

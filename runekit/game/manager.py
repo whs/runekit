@@ -16,3 +16,7 @@ class GameManager(QObject):
     instance_removed = Signal()
     instance_changed = Signal()
     instances = Property(list, get_instances, notify=instance_changed)
+
+    def stop(self):
+        """Stop the GameManager and any GameInstances"""
+        pass

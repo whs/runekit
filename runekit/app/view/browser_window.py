@@ -1,11 +1,12 @@
 import typing
 from typing import TYPE_CHECKING
 
-from PySide2.QtCore import Qt, Slot, QRect
+from PySide2.QtCore import Qt, Slot, QRect, QObject
 from PySide2.QtGui import QIcon
 from PySide2.QtWebEngineWidgets import QWebEngineView, QWebEnginePage
 from PySide2.QtWidgets import QMainWindow
 from runekit.browser import Alt1WebChannel
+from runekit.ui.windowframe import WindowFrame
 
 if TYPE_CHECKING:
     from runekit.app.app import App
@@ -14,17 +15,28 @@ if TYPE_CHECKING:
 class BrowserWindow(QMainWindow):
     app: "App"
     browser: QWebEngineView
+    framed = False
 
     def __init__(self, app: "App", **kwargs):
         super().__init__(**kwargs)
         self.app = app
+
+        if self.framed:
+            self.frame = WindowFrame(parent=self)
+            self.frame.on_exit.connect(self.close)
+            self.setCentralWidget(self.frame)
+
         self._setup_browser()
         self.setWindowTitle(self.app.manifest["appName"])
         self.setAttribute(Qt.WA_DeleteOnClose)
 
     def _setup_browser(self):
         self.browser = BrowserView(self)
-        self.setCentralWidget(self.browser)
+
+        if hasattr(self, "frame"):
+            self.frame.set_content(self.browser)
+        else:
+            self.setCentralWidget(self.browser)
 
         page = QWebEnginePage(self.app.get_web_profile(), self.browser)
         page.setWebChannel(Alt1WebChannel(app=self.app, parent=self.browser))
@@ -50,8 +62,16 @@ class BrowserView(QWebEngineView):
     def createWindow(self, type_: QWebEnginePage.WebWindowType) -> QWebEngineView:
         from runekit.app.view.popup_window import PopupWindow
 
-        app_window = typing.cast(BrowserWindow, self.parent())
+        app_window = self.browser_window()
         popup = PopupWindow(app=app_window.app, parent=app_window)
         popup.setWindowIcon(app_window.windowIcon())
         popup.show()
         return popup.browser
+
+    def browser_window(self) -> BrowserWindow:
+        parent: QObject = self.parent()
+        while parent is not None:
+            if isinstance(parent, BrowserWindow):
+                return parent
+
+            parent = parent.parent()

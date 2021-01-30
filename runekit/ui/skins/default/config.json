@@ -1,0 +1,17 @@
+﻿{
+	"id": "default",
+	"name": "Default",
+	"url": "https://runeapps.org/nis/default/",
+
+	"borderTop": 4,
+	"borderLeft": 4,
+	"borderRight": 4,
+	"borderBottom": 4,
+
+	"addressHeight": 28,
+	"titleHeight": 36,
+
+	"fontColor": "192,192,192",
+	"titleColor": "192,192,192",
+	"addressBackColor": "76,78,84"
+}

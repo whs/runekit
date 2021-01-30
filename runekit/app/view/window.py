@@ -13,11 +13,12 @@ class AppWindow(BrowserWindow):
     logger: logging.Logger
     app_icon: Optional[QIcon]
 
+    framed = True
+
     def __init__(self, **kwargs):
         # TODO: Hide from taskbar/group this as part of one big window?
         super().__init__(
-            flags=Qt.WindowTitleHint
-            | Qt.WindowCloseButtonHint
+            flags=Qt.CustomizeWindowHint
             | Qt.NoDropShadowWindowHint
             | Qt.WindowStaysOnTopHint,
             **kwargs

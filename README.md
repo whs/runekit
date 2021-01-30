@@ -92,7 +92,7 @@ alt1_pressed                  | ❌    | ✅
 game_activity                 | ❌    | ✅
 positionChanged               | ❌    | ✅
 scalingChanged                | ❌    | ❌
-focusChanged                  | ❌    | ✅
+focusChanged                  | ✅    | ✅
 set_taskbar_progress          | ❌    | ❌
 Window capture                | ✅    | ✅
 

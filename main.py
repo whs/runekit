@@ -24,7 +24,7 @@ def main(app_url, game_index, qt_args):
     logging.info("Starting QtWebEngine")
     QtWebEngine.initialize()
     init()
-    app = QApplication([sys.argv[0], *qt_args])
+    app = QApplication(["runekit", *qt_args])
     host = Host()
 
     game_manager = get_platform_manager()

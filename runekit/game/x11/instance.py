@@ -2,11 +2,10 @@ import logging
 import time
 from typing import TYPE_CHECKING
 
+import xcffib.composite
+import xcffib.xproto
 from PySide2.QtCore import QRect
 from PySide2.QtGui import QWindow, QGuiApplication
-import xcffib.xproto
-import xcffib.composite
-from PIL import Image, ImageOps
 
 from runekit.game.instance import GameInstance
 from runekit.game.qt import QtGrabMixin
@@ -34,17 +33,17 @@ class X11GameInstance(QtGrabMixin, GameInstance):
         self._update_is_focused()
 
     def _setup(self):
-        self.manager.composite.RedirectWindow(
+        self.manager.xcomposite.RedirectWindow(
             self.wid, xcffib.composite.Redirect.Automatic
         )
         self.pixmap_id = self.manager.connection.generate_id()
-        self.manager.composite.NameWindowPixmap(
+        self.manager.xcomposite.NameWindowPixmap(
             self.wid, self.pixmap_id, is_checked=True
         )
 
     def __del__(self):
         self.manager.connection.core.FreePixmap(self.pixmap_id)
-        self.manager.composite.UnredirectWindow(
+        self.manager.xcomposite.UnredirectWindow(
             self.wid, xcffib.composite.Redirect.Automatic
         )
 
@@ -77,7 +76,7 @@ class X11GameInstance(QtGrabMixin, GameInstance):
             geom = self.manager.connection.core.GetGeometry(self.pixmap_id).reply()
             xid, shm = self.manager.get_shm(geom.width * geom.height * 4)
             size = (
-                self.manager.shm.GetImage(
+                self.manager.xshm.GetImage(
                     self.pixmap_id,
                     0,
                     0,

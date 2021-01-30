@@ -17,77 +17,6 @@ MAX_SHM = 10
 NET_ACTIVE_WINDOW = "_NET_ACTIVE_WINDOW"
 
 
-class X11EventWorker(QObject):
-    on_active_window_changed = Signal(int)
-    on_alt1 = Signal(int)
-    stop = False
-
-    def __init__(self, manager: "X11GameManager", **kwargs):
-        super().__init__(**kwargs)
-        self.manager = manager
-        self.logger = logging.getLogger(__name__ + "." + self.__class__.__name__)
-
-        self.handlers = {
-            # ge.GenericEventCode: self.dispatch_ge,
-            xcffib.xproto.PropertyNotifyEvent: self.on_property_change,
-        }
-        # self.ge_handlers = {xinput.KeyPress: self.on_key_press}
-        self.active_win_id = self.manager.get_active_window()
-
-    @Slot()
-    def run(self):
-        self.manager.connection.core.ChangeWindowAttributes(
-            self.manager.screen.root,
-            xcffib.xproto.CW.EventMask,
-            [xcffib.xproto.EventMask.PropertyChange],
-            is_checked=True,
-        )
-
-        while True:
-            if self.stop:
-                return
-
-            evt = self.manager.connection.wait_for_event()
-
-            for wanted_type, handler in self.handlers.items():
-                if isinstance(evt, wanted_type):
-                    try:
-                        handler(evt)
-                    except:
-                        self.logger.error(
-                            "Error handling event %s", repr(evt), exc_info=True
-                        )
-
-    #
-    #     def dispatch_ge(self, evt: ge.GenericEvent):
-    #         handler = self.ge_handlers.get(evt.evtype)
-    #         if handler:
-    #             handler(evt)
-    #
-    #     def on_key_press(self, evt):
-    #         window = evt.data.event
-    #         # alt1
-    #         if evt.data.mods.effective_mods & X.Mod1Mask and evt.data.detail == 10:
-    #             self.on_alt1.emit(window.id)
-    #             self.logger.debug("alt1 pressed %s", repr(evt))
-    #
-    #         window.xinput_ungrab_keycode(evt.data.deviceid, evt.data.detail, (X.Mod1Mask,))
-    #         self.manager._setup_grab(window)
-    #
-    def on_property_change(self, evt: xcffib.xproto.PropertyNotifyEvent):
-        if evt.atom == self.manager.get_atom(NET_ACTIVE_WINDOW):
-            active_win_id = self.manager.get_active_window()
-
-            if self.active_win_id == active_win_id:
-                return
-
-            self.active_win_id = active_win_id
-            self.logger.debug(
-                "Active window changed to %d - %s", active_win_id, repr(evt)
-            )
-            self.on_active_window_changed.emit(active_win_id)
-
-
 class X11GameManager(GameManager):
     connection: xcffib.Connection
 
@@ -117,7 +46,6 @@ class X11GameManager(GameManager):
         self.event_worker.on_active_window_changed.connect(
             self.on_active_window_changed
         )
-        self.event_worker.on_alt1.connect(self.on_alt1)
 
         self.event_thread.start()
 
@@ -140,19 +68,6 @@ class X11GameManager(GameManager):
 
         return list(self._instance.values())
 
-    # def _setup_grab(self, window: Window):
-    #     # alt1
-    #     window.xinput_grab_keycode(
-    #         xinput.AllDevices,
-    #         X.CurrentTime,
-    #         10,
-    #         xinput.GrabModeAsync,
-    #         xinput.GrabModeAsync,
-    #         True,
-    #         xinput.KeyPressMask,
-    #         (X.Mod1Mask,),
-    #     )
-
     def get_active_window(self) -> int:
         return self.get_property(self.screen.root, "_NET_ACTIVE_WINDOW")
 
@@ -164,11 +79,6 @@ class X11GameManager(GameManager):
             if active != instance.is_focused:
                 instance.is_focused = active
                 instance.focusChanged.emit(active)
-
-    @Slot(int)
-    def on_alt1(self, winid):
-        if winid in self._instance:
-            self._instance[winid].alt1_pressed.emit()
 
     def _setup_composite(self):
         self.xcomposite.QueryVersion(0, 4, is_checked=True)
@@ -235,3 +145,55 @@ class X11GameManager(GameManager):
             self.xshm.Detach(xid)
             shm.detach()
             shm.remove()
+
+
+class X11EventWorker(QObject):
+    on_active_window_changed = Signal(int)
+    stop = False
+
+    def __init__(self, manager: "X11GameManager", **kwargs):
+        super().__init__(**kwargs)
+        self.manager = manager
+        self.logger = logging.getLogger(__name__ + "." + self.__class__.__name__)
+
+        self.handlers = {
+            xcffib.xproto.PropertyNotifyEvent: self.on_property_change,
+        }
+        self.active_win_id = self.manager.get_active_window()
+
+    @Slot()
+    def run(self):
+        self.manager.connection.core.ChangeWindowAttributes(
+            self.manager.screen.root,
+            xcffib.xproto.CW.EventMask,
+            [xcffib.xproto.EventMask.PropertyChange],
+            is_checked=True,
+        )
+
+        while True:
+            if self.stop:
+                return
+
+            evt = self.manager.connection.wait_for_event()
+
+            for wanted_type, handler in self.handlers.items():
+                if isinstance(evt, wanted_type):
+                    try:
+                        handler(evt)
+                    except:
+                        self.logger.error(
+                            "Error handling event %s", repr(evt), exc_info=True
+                        )
+
+    def on_property_change(self, evt: xcffib.xproto.PropertyNotifyEvent):
+        if evt.atom == self.manager.get_atom(NET_ACTIVE_WINDOW):
+            active_win_id = self.manager.get_active_window()
+
+            if self.active_win_id == active_win_id:
+                return
+
+            self.active_win_id = active_win_id
+            self.logger.debug(
+                "Active window changed to %d - %s", active_win_id, repr(evt)
+            )
+            self.on_active_window_changed.emit(active_win_id)

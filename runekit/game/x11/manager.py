@@ -190,9 +190,6 @@ class X11EventWorker(QObject):
                 return
 
             self.active_win_id = active_win_id
-            self.logger.debug(
-                "Active window changed to %d - %s", active_win_id, repr(evt)
-            )
 
             for id_, instance in self.manager._instances.items():
                 active = active_win_id == id_

@@ -12,7 +12,7 @@ Alt1-compatible toolbox for RuneScape 3, for Linux and macOS.
 
 App                            | Linux | macOS
 -------------------------------|-------|----------
-| **Clue Solver**              | |
+**Clue Solver**                | &nbsp; | &nbsp;
 - Text/Emote                   | ✅    | ✅
 - Map scroll                   | ?     | ?
 - Compass                      | ?     | 2
@@ -22,7 +22,7 @@ App                            | Linux | macOS
 - Slide                        | ?     | ✅
 - Towers                       | ?     | ?
 Example app                    | ✅    | ✅
-| **AfkWarden**                | |
+**AfkWarden**                  | &nbsp;  | &nbsp;
 - Inactive                     | ❌    | ✅
 - XP Counter                   | ❌    | ❌
 - Chatbox                      | 1     | ✅
@@ -36,7 +36,7 @@ Example app                    | ✅    | ✅
 - Fight kiln waves             | ?     | ?
 - Target death                 | ?     | ?
 - Item drops                   | ?     | ?
-| **DgKey**                    | |
+**DgKey**                      | &nbsp; | &nbsp;
 - Show map                     | ✅    | ?
 - Track key                    | ❌    | ?
 - Select player location       | ❌    | ?
@@ -85,9 +85,9 @@ To debug, go to `chrome://inspect` on Chrome/Chromium.
 
 Platform Feature              | Linux | macOS
 ------------------------------|-------|--------
-| **Game Manager**            | |
+**Game Manager**              | &nbsp;  | &nbsp;
 Instance change signals       | ❌    | ❌
-| **Instance**                | |
+**Instance**                  | &nbsp;  | &nbsp;
 alt1_pressed                  | 1     | ✅
 game_activity                 | 2     | ✅
 positionChanged               | ✅    | ✅

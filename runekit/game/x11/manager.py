@@ -1,6 +1,6 @@
 import logging
 import sys
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Union
 
 from PySide2.QtCore import QThread, Slot, Signal, QObject
 import xcffib
@@ -20,13 +20,13 @@ NET_ACTIVE_WINDOW = "_NET_ACTIVE_WINDOW"
 class X11GameManager(GameManager):
     connection: xcffib.Connection
 
-    _instance: Dict[int, X11GameInstance]
+    _instances: Dict[int, X11GameInstance]
     _atom: Dict[bytes, int]
     _shm: List[Tuple[int, sysv_ipc.SharedMemory]]
 
     def __init__(self, **kwargs):
         super().__init__(*kwargs)
-        self._instance = {}
+        self._instances = {}
         self._atom = {}
         self._shm = []
 
@@ -43,9 +43,6 @@ class X11GameManager(GameManager):
         self.event_worker.moveToThread(self.event_thread)
         self.event_thread.started.connect(self.event_worker.run)
         self.event_thread.finished.connect(self.event_worker.deleteLater)
-        self.event_worker.on_active_window_changed.connect(
-            self.on_active_window_changed
-        )
 
         self.event_thread.start()
 
@@ -61,9 +58,9 @@ class X11GameManager(GameManager):
             if wm_class:
                 instance_name, app_name = wm_class.split("\00")
                 if app_name == "RuneScape":
-                    if wid not in self._instance:
+                    if wid not in self._instances:
                         instance = X11GameInstance(self, wid, parent=self)
-                        self._instance[wid] = instance
+                        self._instances[wid] = instance
 
             query = self.connection.core.QueryTree(wid).reply()
             for child in query.children:
@@ -71,19 +68,10 @@ class X11GameManager(GameManager):
 
         visit(self.screen.root)
 
-        return list(self._instance.values())
+        return list(self._instances.values())
 
     def get_active_window(self) -> int:
         return self.get_property(self.screen.root, "_NET_ACTIVE_WINDOW")
-
-    @Slot(int)
-    def on_active_window_changed(self, winid):
-        for id_, instance in self._instance.items():
-            active = winid == id_
-
-            if active != instance.is_focused:
-                instance.is_focused = active
-                instance.focusChanged.emit(active)
 
     def _setup_composite(self):
         self.xcomposite.QueryVersion(0, 4, is_checked=True)
@@ -153,8 +141,6 @@ class X11GameManager(GameManager):
 
 
 class X11EventWorker(QObject):
-    on_active_window_changed = Signal(int)
-
     def __init__(self, manager: "X11GameManager", **kwargs):
         super().__init__(**kwargs)
         self.manager = manager
@@ -162,6 +148,9 @@ class X11EventWorker(QObject):
 
         self.handlers = {
             xcffib.xproto.PropertyNotifyEvent: self.on_property_change,
+            xcffib.xproto.ConfigureNotifyEvent: self.on_configure_event,
+            xcffib.xproto.KeyPressEvent: self.on_input_event,
+            xcffib.xproto.ButtonPressEvent: self.on_input_event,
         }
         self.active_win_id = self.manager.get_active_window()
 
@@ -204,4 +193,26 @@ class X11EventWorker(QObject):
             self.logger.debug(
                 "Active window changed to %d - %s", active_win_id, repr(evt)
             )
-            self.on_active_window_changed.emit(active_win_id)
+
+            for id_, instance in self.manager._instances.items():
+                active = active_win_id == id_
+
+                if active != instance.is_focused:
+                    instance.is_focused = active
+                    instance.focusChanged.emit(active)
+
+    def on_input_event(
+        self, evt: Union[xcffib.xproto.KeyPressEvent, xcffib.xproto.ButtonPressEvent]
+    ):
+        try:
+            self.manager._instances[evt.event].input_signal.emit(evt)
+        except KeyError:
+            self.logger.debug("Got input event for %d but is not registered", evt.event)
+
+    def on_configure_event(self, evt: xcffib.xproto.ConfigureNotifyEvent):
+        try:
+            self.manager._instances[evt.window].config_signal.emit(evt)
+        except KeyError:
+            self.logger.debug(
+                "Got configure event for %d but is not registered", evt.window
+            )

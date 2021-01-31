@@ -148,9 +148,9 @@ class Alt1Api(QObject):
             return 0
 
         value = QCursor.pos()
-        pos = self.app.game_instance.get_position()
+        pos = self._game_position
 
-        if not pos.contains(value, True):
+        if not pos.contains(value, True) or not self._game_active:
             # Cursor is out of game
             return 0
 

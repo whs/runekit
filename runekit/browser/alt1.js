@@ -290,21 +290,19 @@
         instance.alt1Signal.connect(function (pos){
             let mouseX = pos >> 16;
             let mouseY = pos & 0xFFFF;
-            let mouseRsX = mouseX - instance.gamePositionX;
-            let mouseRsY = mouseY - instance.gamePositionY;
             let event = {
                 eventName: 'alt1pressed',
                 text: '',
                 mouseAbs: {
+                    x: mouseX + instance.gamePositionX,
+                    y: mouseY + instance.gamePositionY,
+                },
+                mouseRs: {
                     x: mouseX,
                     y: mouseY,
                 },
-                mouseRs: {
-                    x: mouseRsX,
-                    y: mouseRsY,
-                },
-                x: mouseRsX,
-                y: mouseRsY,
+                x: mouseX,
+                y: mouseY,
                 rsLinked: true,
             };
             emit(event);

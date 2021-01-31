@@ -44,3 +44,8 @@ class QtGrabMixin(QtBaseMixin):
             pixmap.save("/tmp/qtshot.bmp", None, 100)
 
         return image
+
+
+class QtEmbedMixin(QtBaseMixin):
+    def embed_window(self, window: QWindow):
+        window.setParent(self.qwindow)

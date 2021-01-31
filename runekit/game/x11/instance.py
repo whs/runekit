@@ -1,14 +1,14 @@
 import logging
 import time
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Union
 
 import xcffib.composite
 import xcffib.xproto
-from PySide2.QtCore import QRect
+from PySide2.QtCore import QRect, Signal, Slot
 from PySide2.QtGui import QWindow, QGuiApplication
 
 from runekit.game.instance import GameInstance
-from runekit.game.qt import QtGrabMixin
+from runekit.game.qt import QtGrabMixin, QtEmbedMixin
 from .ximage import zpixmap_shm_to_image
 
 if TYPE_CHECKING:
@@ -22,6 +22,11 @@ class X11GameInstance(QtGrabMixin, GameInstance):
 
     game_last_grab = 0.0
     game_last_image = None
+    embedded_windows: List[QWindow]
+    cached_position = None
+
+    input_signal = Signal(xcffib.Event)
+    config_signal = Signal(xcffib.Event)
 
     def __init__(self, manager: "X11GameManager", wid: int, **kwargs):
         super().__init__(**kwargs)
@@ -29,16 +34,26 @@ class X11GameInstance(QtGrabMixin, GameInstance):
         self.wid = wid
         self.qwindow = QWindow.fromWinId(wid)
         self.logger = logging.getLogger(__name__ + "." + self.__class__.__name__)
+        self.embedded_windows = []
         self._setup()
+
+        self.input_signal.connect(self.on_input)
+        self.config_signal.connect(self.on_config)
+
         self._update_is_focused()
 
     def _setup(self):
         self.manager.xcomposite.RedirectWindow(
             self.wid, xcffib.composite.Redirect.Automatic
         )
-        self.pixmap_id = self.manager.connection.generate_id()
-        self.manager.xcomposite.NameWindowPixmap(
-            self.wid, self.pixmap_id, is_checked=True
+        self.name_pixmap()
+        self.manager.connection.core.ChangeWindowAttributes(
+            self.wid,
+            xcffib.xproto.CW.EventMask,
+            [
+                xcffib.xproto.EventMask.KeyPress
+                | xcffib.xproto.EventMask.StructureNotify
+            ],
         )
 
     def __del__(self):
@@ -47,10 +62,28 @@ class X11GameInstance(QtGrabMixin, GameInstance):
             self.wid, xcffib.composite.Redirect.Automatic
         )
 
-    def get_position(self) -> QRect:
-        geom = self.manager.connection.core.GetGeometry(self.wid).reply()
+    def name_pixmap(self):
+        if hasattr(self, "pixmap_id"):
+            self.manager.connection.core.FreePixmap(self.pixmap_id)
 
-        return QRect(geom.x, geom.y, geom.width, geom.height)
+        self.pixmap_id = self.manager.connection.generate_id()
+        self.manager.xcomposite.NameWindowPixmap(
+            self.wid, self.pixmap_id, is_checked=True
+        )
+
+    def get_position(self) -> QRect:
+        if self.cached_position:
+            return self.cached_position
+
+        geom = self.manager.connection.core.GetGeometry(self.wid).reply()
+        translated = self.manager.connection.core.TranslateCoordinates(
+            self.wid, self.manager.screen.root, 0, 0
+        ).reply()
+
+        self.cached_position = QRect(
+            translated.dst_x, translated.dst_y, geom.width, geom.height
+        )
+        return self.cached_position
 
     def get_scaling(self) -> float:
         screen = QGuiApplication.screenAt(self.get_position().topLeft())
@@ -100,3 +133,28 @@ class X11GameInstance(QtGrabMixin, GameInstance):
         finally:
             if shm:
                 self.manager.free_shm((xid, shm))
+
+    def embed_window(self, window: QWindow):
+        super().embed_window(window)
+        self.embedded_windows.append(window)
+
+    @Slot(xcffib.Event)
+    def on_config(self, evt: xcffib.xproto.ConfigureNotifyEvent):
+        self.name_pixmap()
+
+        translated = self.manager.connection.core.TranslateCoordinates(
+            self.wid, self.manager.screen.root, 0, 0
+        ).reply()
+        size = QRect(translated.dst_x, translated.dst_y, evt.width, evt.height)
+
+        self.cached_position = size
+        self.positionChanged.emit(size)
+
+    @Slot(xcffib.Event)
+    def on_input(
+        self, evt: Union[xcffib.xproto.KeyPressEvent, xcffib.xproto.ButtonPressEvent]
+    ):
+        if evt.detail == 10 and evt.state & xcffib.xproto.KeyButMask.Mod1:
+            self.alt1_pressed.emit()
+        else:
+            self.game_activity.emit()

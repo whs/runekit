@@ -88,13 +88,16 @@ Platform Feature              | Linux | macOS
 **Game Manager**              ||
 Instance change signals       | ❌    | ❌
 **Instance**                  ||
-alt1_pressed                  | ❌    | ✅
-game_activity                 | ❌    | ✅
-positionChanged               | ❌    | ✅
+alt1_pressed                  | 1     | ✅
+game_activity                 | 2     | ✅
+positionChanged               | ✅    | ✅
 scalingChanged                | ❌    | ❌
-focusChanged                  | ❌    | ✅
+focusChanged                  | ✅    | ✅
 set_taskbar_progress          | ❌    | ❌
 Window capture                | ✅    | ✅
+
+- 1: Works, but the game also receive the key
+- 2: Only detect keyboard activity
 
 ## Known issues
 

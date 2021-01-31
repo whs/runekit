@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Literal
 from PySide2.QtCore import QObject, Signal, Property, QRect, Slot
 
 from PIL import Image
+from PySide2.QtGui import QWindow
 
 if TYPE_CHECKING:
     from .manager import GameManager
@@ -70,3 +71,6 @@ class GameInstance(QObject):
     @abc.abstractmethod
     def set_taskbar_progress(self, type_: PROGRESS_TYPE, progress: float):
         ...
+
+    def embed_window(self, window: QWindow):
+        pass

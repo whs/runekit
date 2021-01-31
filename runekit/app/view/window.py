@@ -1,5 +1,5 @@
 import logging
-from typing import Optional, TYPE_CHECKING
+from typing import Optional
 
 import requests
 from PySide2.QtCore import QSize, Qt, QRunnable, Slot, QObject, Signal, QThreadPool

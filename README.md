@@ -10,37 +10,37 @@ Alt1-compatible toolbox for RuneScape 3, for Linux and macOS.
 
 **Overlay are not supported yet**
 
-App                            | Linux | macOS
--------------------------------|-------|----------
-**Clue Solver**                | &nbsp; | &nbsp;
-- Text/Emote                   | ✅    | ✅
-- Map scroll                   | ?     | ?
-- Compass                      | ?     | 2
-- Scan                         | ?     | ?
-- Lockbox                      | ?     | ?
-- Celtic knot                  | ?     | ✅
-- Slide                        | ?     | ✅
-- Towers                       | ?     | ?
-Example app                    | ✅    | ✅
-**AfkWarden**                  | &nbsp;  | &nbsp;
-- Inactive                     | ❌    | ✅
-- XP Counter                   | ❌    | ❌
-- Chatbox                      | 1     | ✅
-- Crafting menu                | ✅    | ✅
-- Buffs                        | ✅    | ✅
-- Action bar stats             | ✅    | ✅
-- Dialog box                   | ✅    | ✅
-- Target death                 | ?     | ?
-- Sheathe stance               | ?     | ?
-- Castle Wars                  | ?     | ?
-- Fight kiln waves             | ?     | ?
-- Target death                 | ?     | ?
-- Item drops                   | ?     | ?
-**DgKey**                      | &nbsp; | &nbsp;
-- Show map                     | ✅    | ?
-- Track key                    | ❌    | ?
-- Select player location       | ❌    | ?
-**[ArchMatCounter](https://zerogwafa.github.io/ArchMatCounter/appconfig.json)** | ?     | ?
+| App                            | Linux | macOS
+---------------------------------|-------|----------
+| **Clue Solver**                | &nbsp; | &nbsp;
+| - Text/Emote                   | ✅    | ✅
+| - Map scroll                   | ?     | ?
+| - Compass                      | ?     | 2
+| - Scan                         | ?     | ?
+| - Lockbox                      | ?     | ?
+| - Celtic knot                  | ?     | ✅
+| - Slide                        | ?     | ✅
+| - Towers                       | ?     | ?
+| Example app                    | ✅    | ✅
+| **AfkWarden**                  | &nbsp;  | &nbsp;
+| - Inactive                     | ❌    | ✅
+| - XP Counter                   | ❌    | ❌
+| - Chatbox                      | 1     | ✅
+| - Crafting menu                | ✅    | ✅
+| - Buffs                        | ✅    | ✅
+| - Action bar stats             | ✅    | ✅
+| - Dialog box                   | ✅    | ✅
+| - Target death                 | ?     | ?
+| - Sheathe stance               | ?     | ?
+| - Castle Wars                  | ?     | ?
+| - Fight kiln waves             | ?     | ?
+| - Target death                 | ?     | ?
+| - Item drops                   | ?     | ?
+| **DgKey**                      | &nbsp; | &nbsp;
+| - Show map                     | ✅    | ?
+| - Track key                    | ❌    | ?
+| - Select player location       | ❌    | ?
+| **[ArchMatCounter](https://zerogwafa.github.io/ArchMatCounter/appconfig.json)** | ?     | ?
 
 - 1: Can be setup but only fire once (needs inactive to work)
 - 2: Detected but cannot place mark

@@ -2,7 +2,8 @@ from functools import reduce
 from typing import List, Dict, Optional
 
 import Quartz
-from PySide2.QtCore import QTimer
+import ApplicationServices
+from PySide2.QtCore import QTimer, Signal, Slot
 from PySide2.QtGui import QDesktopServices
 from PySide2.QtWidgets import QMessageBox
 
@@ -16,10 +17,17 @@ has_prompted_accessibility = False
 class QuartzGameManager(GameManager):
     _instances: Dict[int, GameInstance]
 
+    request_accessibility_popup = Signal()
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._instances = {}
+        self.request_accessibility_popup.connect(self.accessibility_popup)
         self._setup_tap()
+
+        if not ApplicationServices.AXIsProcessTrusted():
+            self.accessibility_popup()
+
 
     def _setup_tap(self):
         events = [
@@ -94,17 +102,17 @@ class QuartzGameManager(GameManager):
 
         return event
 
+    @Slot()
     def accessibility_popup(self):
         global has_prompted_accessibility
         if has_prompted_accessibility:
             return
 
-        # TODO: Check AXIsProcessTrusted?
         has_prompted_accessibility = True
         msgbox = QMessageBox(
             QMessageBox.Warning,
             "Permission required",
-            "RuneKit needs Accessibility Access for global hotkey and game activity monitoring\n\nOpen System Preferences > Security > Privacy > Accessibility to allow this",
+            "RuneKit needs Accessibility Access and Screen Recording for global hotkey and game activity monitoring\n\nOpen System Preferences > Security > Privacy > Accessibility to allow this",
             QMessageBox.Open | QMessageBox.Ignore,
         )
         button = msgbox.exec()

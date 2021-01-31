@@ -1,11 +1,11 @@
 import logging
 import sys
+import traceback
 
 import click
-from PySide2.QtWebEngine import QtWebEngine
-from PySide2.QtWidgets import QApplication
+from PySide2.QtWidgets import QApplication, QMessageBox
 
-from runekit.browser import init
+from runekit import browser
 from runekit.game import get_platform_manager
 from runekit.host import Host
 
@@ -22,23 +22,32 @@ def main(app_url, game_index, qt_args):
     logging.basicConfig(level=logging.DEBUG)
 
     logging.info("Starting QtWebEngine")
-    QtWebEngine.initialize()
-    init()
+    browser.init()
     app = QApplication(["runekit", *qt_args])
-    host = Host()
+    try:
+        host = Host()
 
-    game_manager = get_platform_manager()
-    logging.info("Scanning for game instances")
-    game_instances = game_manager.get_instances()
-    logging.info("Found %d instances", len(game_instances))
-    game = game_instances[game_index]
+        game_manager = get_platform_manager()
+        logging.info("Scanning for game instances")
+        game_instances = game_manager.get_instances()
+        logging.info("Found %d instances", len(game_instances))
+        game = game_instances[game_index]
 
-    logging.info("Loading app")
-    host.start_app(app_url, game)
+        logging.info("Loading app")
+        host.start_app(app_url, game)
 
-    app.exec_()
-    game_manager.stop()
-    sys.exit(0)
+        app.exec_()
+        game_manager.stop()
+        sys.exit(0)
+    except Exception as e:
+        msg = QMessageBox(
+            QMessageBox.Critical,
+            "Oh No!",
+            f"Fatal error: \n\n{e.__class__.__name__}: {e}",
+        )
+        msg.setDetailedText(traceback.format_exc())
+        msg.exec_()
+        raise
 
 
 if __name__ == "__main__":

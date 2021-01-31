@@ -1,6 +1,7 @@
 import io
 import logging
 import time
+from typing import TYPE_CHECKING
 
 import Quartz
 import objc
@@ -10,6 +11,9 @@ from PySide2.QtGui import QGuiApplication
 import ApplicationServices
 
 from ..instance import GameInstance
+
+if TYPE_CHECKING:
+    from .manager import QuartzGameManager
 
 _debug_dump_file = False
 logger = logging.getLogger(__name__)
@@ -77,7 +81,7 @@ class QuartzGameInstance(GameInstance):
     __game_last_grab = 0.0
     __game_last_image = None
 
-    def __init__(self, manager, wid, pid, **kwargs):
+    def __init__(self, manager: 'QuartzGameManager', wid, pid, **kwargs):
         super().__init__(**kwargs)
         self.manager = manager
         self.wid = wid
@@ -155,6 +159,10 @@ class QuartzGameInstance(GameInstance):
             [self.wid],
             Quartz.kCGWindowImageBoundsIgnoreFraming,
         )
+        if not imgref:
+            self.manager.request_accessibility_popup.emit()
+            raise NoCapturePermission
+
         out = cgimageref_to_image(imgref)
         scale = self.get_scaling()
         if scale > 1:
@@ -188,6 +196,7 @@ class AXAPIError(Exception):
         ApplicationServices.kAXErrorNotificationAlreadyRegistered: "The notification has already been registered",
         ApplicationServices.kAXErrorCannotComplete: "The function cannot complete because messaging has failed in some way.",
         ApplicationServices.kAXErrorFailure: "There is some sort of system memory failure.",
+        ApplicationServices.kAXErrorAPIDisabled: "Assistive applications are not enabled in System Preferences.",
     }
 
     def __init__(self, code):
@@ -195,3 +204,7 @@ class AXAPIError(Exception):
             raise ValueError("Success")
 
         super().__init__(self.mapping.get(code, f"API Error: {code}"))
+
+class NoCapturePermission(Exception):
+    def __init__(self):
+        super().__init__('Screen Recording permission is not allowed')

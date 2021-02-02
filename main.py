@@ -3,7 +3,12 @@ import sys
 import traceback
 
 import click
-from PySide2.QtWidgets import QApplication, QMessageBox
+from PySide2.QtWidgets import (
+    QApplication,
+    QMessageBox,
+    QInputDialog,
+    QDialog,
+)
 
 from runekit import browser
 from runekit.game import get_platform_manager
@@ -17,27 +22,50 @@ from runekit.host import Host
 )
 @click.option("--game-index", default=0, help="Game instance index, starting from 0")
 @click.argument("qt_args", nargs=-1, type=click.UNPROCESSED)
-@click.argument("app_url")
+@click.argument("app_url", required=False)
 def main(app_url, game_index, qt_args):
     logging.basicConfig(level=logging.DEBUG)
 
     logging.info("Starting QtWebEngine")
     browser.init()
     app = QApplication(["runekit", *qt_args])
+    game_manager = None
     try:
-        host = Host()
-
         game_manager = get_platform_manager()
         logging.info("Scanning for game instances")
         game_instances = game_manager.get_instances()
         logging.info("Found %d instances", len(game_instances))
+        if len(game_instances) == 0:
+            QMessageBox(
+                QMessageBox.Critical,
+                "Game not found",
+                "Cannot find RuneScape. Launch the game first",
+            ).exec_()
+            return
+
+        host = Host()
         game = game_instances[game_index]
+
+        if app_url is None:
+            dialog = QInputDialog()
+            dialog.setComboBoxEditable(True)
+            dialog.setComboBoxItems(
+                [
+                    "https://runeapps.org/apps/alt1/example/appconfig.json",
+                    "https://runeapps.org/apps/clue/appconfig.json",
+                    "https://runeapps.org/apps/alt1/afkscape/appconfig.json",
+                ]
+            )
+            dialog.setLabelText("Enter appconfig URL")
+            dialog.setWindowTitle("RuneKit")
+            if dialog.exec_() == QDialog.DialogCode.Rejected:
+                return
+            app_url = dialog.textValue()
 
         logging.info("Loading app")
         host.start_app(app_url, game)
 
         app.exec_()
-        game_manager.stop()
         sys.exit(0)
     except Exception as e:
         msg = QMessageBox(
@@ -47,7 +75,11 @@ def main(app_url, game_index, qt_args):
         )
         msg.setDetailedText(traceback.format_exc())
         msg.exec_()
+
         raise
+    finally:
+        if game_manager is not None:
+            game_manager.stop()
 
 
 if __name__ == "__main__":

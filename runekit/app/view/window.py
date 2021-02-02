@@ -1,4 +1,5 @@
 import logging
+import sys
 from typing import Optional
 
 import requests
@@ -13,16 +14,20 @@ class AppWindow(BrowserWindow):
     logger: logging.Logger
     app_icon: Optional[QIcon]
 
-    framed = True
+    framed = sys.platform != "darwin"
 
     def __init__(self, **kwargs):
         # TODO: Hide from taskbar/group this as part of one big window?
-        super().__init__(
-            flags=Qt.CustomizeWindowHint
-            | Qt.NoDropShadowWindowHint
-            | Qt.WindowStaysOnTopHint,
-            **kwargs
-        )
+        flags = Qt.NoDropShadowWindowHint | Qt.WindowStaysOnTopHint
+
+        if self.framed:
+            flags |= Qt.CustomizeWindowHint
+        else:
+            flags |= (
+                Qt.CustomizeWindowHint | Qt.WindowTitleHint | Qt.WindowCloseButtonHint
+            )
+
+        super().__init__(flags=flags, **kwargs)
         self.pool = QThreadPool(parent=self)
         self.setWindowTitle(self.app.manifest["appName"])
 

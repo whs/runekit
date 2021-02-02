@@ -1,3 +1,4 @@
+import time
 from functools import reduce
 from typing import List, Dict, Optional
 
@@ -25,8 +26,11 @@ class QuartzGameManager(GameManager):
         self.request_accessibility_popup.connect(self.accessibility_popup)
         self._setup_tap()
 
-        if not ApplicationServices.AXIsProcessTrusted():
-            self.accessibility_popup()
+        ApplicationServices.AXIsProcessTrustedWithOptions({
+            ApplicationServices.kAXTrustedCheckOptionPrompt: True,
+        })
+        while not ApplicationServices.AXIsProcessTrusted():
+            time.sleep(0.1)
 
 
     def _setup_tap(self):
@@ -113,14 +117,14 @@ class QuartzGameManager(GameManager):
         msgbox = QMessageBox(
             QMessageBox.Warning,
             "Permission required",
-            "RuneKit needs Accessibility Access and Screen Recording for global hotkey and game activity monitoring\n\nOpen System Preferences > Security > Privacy > Accessibility to allow this",
+            "RuneKit needs Screen Recording permission\n\nOpen System Preferences > Security > Privacy > Screen Recording to allow this",
             QMessageBox.Open | QMessageBox.Ignore,
         )
         button = msgbox.exec()
 
         if button == QMessageBox.Open:
             QDesktopServices.openUrl(
-                "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"
+                "x-apple.systempreferences:com.apple.preference.security?Privacy_Screen Recording"
             )
 
         # FIXME: Closing this dialog will close the app, idk why

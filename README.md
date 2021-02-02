@@ -4,8 +4,6 @@
 
 Alt1-compatible toolbox for RuneScape 3, for Linux and macOS.
 
-**Alpha quality software**
-
 ## What works
 
 **Overlay are not supported yet**
@@ -23,9 +21,9 @@ Alt1-compatible toolbox for RuneScape 3, for Linux and macOS.
 | - Towers                       | ?     | ?
 | Example app                    | ✅    | ✅
 | **AfkWarden**                  | &nbsp;  | &nbsp;
-| - Inactive                     | ❌    | ✅
+| - Inactive                     | 1    | ✅
 | - XP Counter                   | ❌    | ❌
-| - Chatbox                      | 1     | ✅
+| - Chatbox                      | ✅     | ✅
 | - Crafting menu                | ✅    | ✅
 | - Buffs                        | ✅    | ✅
 | - Action bar stats             | ✅    | ✅
@@ -42,8 +40,8 @@ Alt1-compatible toolbox for RuneScape 3, for Linux and macOS.
 | - Select player location       | ❌    | ?
 | **[ArchMatCounter](https://zerogwafa.github.io/ArchMatCounter/appconfig.json)** | ?     | ?
 
-- 1: Can be setup but only fire once (needs inactive to work)
-- 2: Detected but cannot place mark
+- 1: Only keyboard activity count as active
+- 2: Detected but cannot place pin
 
 ## Running
 
@@ -64,15 +62,13 @@ Requires libxcb to be installed
 
 ### macOS additional instruction
 
-You'll probably need Command Line Tools to build the C code, run: `xcode-select --install` to get it
+~~You'll probably need Command Line Tools to build the C code, run: `xcode-select --install` to get it~~ Currently the native code isn't really used (will be used for OCR features)
 
 You will need to add Python in System Preferences > Security > Privacy in these sections:
   - Accessibility
   - Screen Recording 
     
 Note that Python might appear as the closest macOS application (eg. your terminal emulator) instead of Python
-
-For best result, the game window should be on non-Retina display
 
 ## Developer
 
@@ -109,7 +105,7 @@ Window capture                | ✅    | ✅
 This project is [No Maintenance Intended](https://unmaintained.tech/).
 It is provided as-is and may not be actively maintained. There's no support, and no promise that pull requests will be
 reviewed and merged. In other word: I wrote this for my own use and there's no point in keeping it to myself so I'm sharing it.
-However, making it a proper open source project is an ongoing work that I'm not willing to do.
+However, maintaining it as a proper open source project is an ongoing work that I don't have the bandwidth to do.
 
 This project is [licensed](LICENSE) under GPLv3, and contains code from [third parties](THIRD_PARTY_LICENSE.md).
 Contains code from the Alt1 application.

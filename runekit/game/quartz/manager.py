@@ -86,8 +86,9 @@ class QuartzGameManager(GameManager):
             instance = self.get_instance_by_pid(front_app.processIdentifier())
         else:
             instance = self._instances.get(nsevent.windowNumber())
-            if not instance:
-                return event
+
+        if not instance:
+            return event
 
         # Check for cmd1
         if nsevent.type() == Quartz.NSEventTypeKeyDown:

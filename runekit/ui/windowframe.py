@@ -1,6 +1,4 @@
-from pathlib import Path
-
-from PySide2.QtCore import Signal, QSize
+from PySide2.QtCore import Signal
 from PySide2.QtGui import QPixmap, Qt, QResizeEvent
 from PySide2.QtWidgets import (
     QWidget,
@@ -11,7 +9,9 @@ from PySide2.QtWidgets import (
     QPushButton,
 )
 
-SKIN = Path(__file__).parent / "skins" / "default"
+from runekit.utils import BASE
+
+SKIN = BASE / "ui" / "skins" / "default"
 
 
 class WindowFrame(QWidget):

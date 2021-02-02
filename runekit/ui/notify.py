@@ -1,13 +1,13 @@
 import abc
-from pathlib import Path
 from typing import Union
 
 from PySide2.QtGui import QIcon
 from PySide2.QtWidgets import QSystemTrayIcon
 
 from .tooltip import TooltipManager
+from ..utils import BASE
 
-TRAY_ICON = Path(__file__).parent / "trayicon.png"
+TRAY_ICON = BASE / "ui" / "trayicon.png"
 
 
 class Notifier(abc.ABC):

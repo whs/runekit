@@ -7,11 +7,12 @@ from PySide2.QtWebEngineWidgets import QWebEngineProfile, QWebEngineScript
 
 from runekit.browser.api import RuneKitSchemeHandler
 from runekit.browser.scheme import RuneKitScheme
+from runekit.utils import BASE
 
 if TYPE_CHECKING:
     from runekit.app import App
 
-script_file = Path(__file__).parent / "alt1.js"
+script_file = BASE / "browser" / "alt1.js"
 
 with script_file.open() as fp:
     src = fp.read()

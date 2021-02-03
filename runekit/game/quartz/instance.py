@@ -11,6 +11,7 @@ from PySide2.QtGui import QGuiApplication
 import ApplicationServices
 
 from ..instance import GameInstance
+from ..psutil import PsUtilNetStat
 
 if TYPE_CHECKING:
     from .manager import QuartzGameManager
@@ -75,7 +76,7 @@ def on_ax_event(observer, element, notification, ptr):
         self.logger.warning("Got unknown AX event %s", notification)
 
 
-class QuartzGameInstance(GameInstance):
+class QuartzGameInstance(PsUtilNetStat, GameInstance):
     _is_active = False
 
     __game_last_grab = 0.0
@@ -183,9 +184,6 @@ class QuartzGameInstance(GameInstance):
         )
         out = cgimageref_to_image(imgref)
         return out.resize((w, h), Image.NEAREST)
-
-    def set_taskbar_progress(self, type, progress):
-        pass
 
 
 class AXAPIError(Exception):

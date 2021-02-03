@@ -89,6 +89,7 @@ game_activity                 | 2     | ✅
 positionChanged               | ✅    | ✅
 scalingChanged                | ❌    | ❌
 focusChanged                  | ✅    | ✅
+worldChanged                  | ❌    | ✅
 set_taskbar_progress          | ❌    | ❌
 Window capture                | ✅    | ✅
 

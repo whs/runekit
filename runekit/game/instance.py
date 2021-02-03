@@ -1,6 +1,6 @@
 import abc
 import time
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Literal, Optional
 
 from PySide2.QtCore import QObject, Signal, Property, QRect, Slot
 
@@ -57,6 +57,13 @@ class GameInstance(QObject):
     focused = Property(bool, is_focused, notify=focusChanged)
 
     @abc.abstractmethod
+    def get_world(self) -> Optional[int]:
+        ...
+
+    worldChanged = Signal(int)
+    world = Property(int, get_world, notify=worldChanged)
+
+    @abc.abstractmethod
     def grab_game(self) -> Image:
         ...
 
@@ -68,9 +75,8 @@ class GameInstance(QObject):
         image = self.grab_game()
         return image.crop((x, y, x + w, y + h))
 
-    @abc.abstractmethod
     def set_taskbar_progress(self, type_: PROGRESS_TYPE, progress: float):
-        ...
+        pass
 
     def embed_window(self, window: QWindow):
         pass

@@ -16,6 +16,7 @@ pyobjc-framework-Quartz = [{ version="7.1", platform="darwin" }]
 pyobjc-framework-ApplicationServices = [{ version="7.1", platform="darwin" }]
 pyobjc-framework-CoreText = [{ version="7.1", platform="darwin" }]
 click = "^7.1.2"
+psutil = "^5.8.0"
 
 [tool.poetry.dev-dependencies]
 Cython = "^0.29.21"

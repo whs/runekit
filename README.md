@@ -43,6 +43,12 @@ Alt1-compatible toolbox for RuneScape 3, for Linux and macOS.
 - 1: Only keyboard activity count as active
 - 2: Detected but cannot place pin
 
+## Installation setup
+
+These instructions are for those who have little/no programming experience and prepare your environment to run the instructions in the following section `Running`.
+
+- [macOS](./docs/macos-setup.md)
+
 ## Running
 
 This project use [Poetry](https://python-poetry.org) as package manager.

@@ -4,3 +4,4 @@ runekit/image/format.c
 runekit/image/format.*.*
 setup.py
 *.egg-info
+__pycache__

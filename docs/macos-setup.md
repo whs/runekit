@@ -56,10 +56,10 @@ brew install poetry
 
 ## One last thing...
 
-Before you go and run the commands from the other page, you'll want to change what file directory your terminal is in to be the folder where you downloaded `runekit`. Assuming you downloaded it as instructed in step 1, you can do this by running the following:
+Before you go and run the commands from the other page, you'll want to change what file directory your terminal is in to be the folder where you downloaded `runekit-master`. Assuming you downloaded it as instructed in step 1, you can do this by running the following:
 
 ```bash
-cd ~/Downloads/runekit
+cd ~/Downloads/runekit-master
 ```
 
 **Note**: if you close and reopen the terminal, you'll need to renavigate to the correct folder (just rerun the above command).

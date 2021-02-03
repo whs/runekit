@@ -22,10 +22,6 @@ class AppWindow(BrowserWindow):
 
         if self.framed:
             flags |= Qt.CustomizeWindowHint
-        else:
-            flags |= (
-                Qt.CustomizeWindowHint | Qt.WindowTitleHint | Qt.WindowCloseButtonHint
-            )
 
         super().__init__(flags=flags, **kwargs)
         self.pool = QThreadPool(parent=self)

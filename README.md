@@ -48,6 +48,7 @@ Alt1-compatible toolbox for RuneScape 3, for Linux and macOS.
 These instructions are for those who have little/no programming experience and prepare your environment to run the instructions in the following section `Running`.
 
 - [macOS](./docs/macos-setup.md)
+  - [video guide](https://youtu.be/X03SyyV9Bro) from PupRS
 
 ## Running
 

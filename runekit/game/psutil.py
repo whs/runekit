@@ -39,7 +39,6 @@ class PsUtilNetStat(PsUtilBaseMixin):
             return None
 
         for conn in addrs:
-            print(conn)
             if conn.status != psutil.CONN_ESTABLISHED:
                 continue
 

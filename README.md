@@ -8,37 +8,37 @@ Alt1-compatible toolbox for RuneScape 3, for Linux and macOS.
 
 **Overlay are not supported yet**
 
-| App                            | Linux | macOS
----------------------------------|-------|----------
-| **Clue Solver**                | &nbsp; | &nbsp;
-| - Text/Emote                   | ✅    | ✅
-| - Map scroll                   | ?     | ?
-| - Compass                      | ?     | 2
-| - Scan                         | ?     | ?
-| - Lockbox                      | ?     | ?
-| - Celtic knot                  | ?     | ✅
-| - Slide                        | ?     | ✅
-| - Towers                       | ?     | ?
-| Example app                    | ✅    | ✅
-| **AfkWarden**                  | &nbsp;  | &nbsp;
-| - Inactive                     | 1    | ✅
-| - XP Counter                   | ❌    | ❌
-| - Chatbox                      | ✅     | ✅
-| - Crafting menu                | ✅    | ✅
-| - Buffs                        | ✅    | ✅
-| - Action bar stats             | ✅    | ✅
-| - Dialog box                   | ✅    | ✅
-| - Target death                 | ?     | ?
-| - Sheathe stance               | ?     | ?
-| - Castle Wars                  | ?     | ?
-| - Fight kiln waves             | ?     | ?
-| - Target death                 | ?     | ?
-| - Item drops                   | ?     | ?
-| **DgKey**                      | &nbsp; | &nbsp;
-| - Show map                     | ✅    | ?
-| - Track key                    | ❌    | ?
-| - Select player location       | ❌    | ?
-| **[ArchMatCounter](https://zerogwafa.github.io/ArchMatCounter/appconfig.json)** | ?     | ?
+| App                                                                             | Linux  | macOS  |
+| ------------------------------------------------------------------------------- | ------ | ------ |
+| **Clue Solver**                                                                 | &nbsp; | &nbsp; |
+| - Text/Emote                                                                    | ✅     | ✅     |
+| - Map scroll                                                                    | ?      | ?      |
+| - Compass                                                                       | ?      | 2      |
+| - Scan                                                                          | ?      | ?      |
+| - Lockbox                                                                       | ?      | ?      |
+| - Celtic knot                                                                   | ?      | ✅     |
+| - Slide                                                                         | ?      | ✅     |
+| - Towers                                                                        | ?      | ?      |
+| Example app                                                                     | ✅     | ✅     |
+| **AfkWarden**                                                                   | &nbsp; | &nbsp; |
+| - Inactive                                                                      | 1      | ✅     |
+| - XP Counter                                                                    | ❌     | ❌     |
+| - Chatbox                                                                       | ✅     | ✅     |
+| - Crafting menu                                                                 | ✅     | ✅     |
+| - Buffs                                                                         | ✅     | ✅     |
+| - Action bar stats                                                              | ✅     | ✅     |
+| - Dialog box                                                                    | ✅     | ✅     |
+| - Target death                                                                  | ?      | ?      |
+| - Sheathe stance                                                                | ?      | ?      |
+| - Castle Wars                                                                   | ?      | ?      |
+| - Fight kiln waves                                                              | ?      | ?      |
+| - Target death                                                                  | ?      | ?      |
+| - Item drops                                                                    | ?      | ?      |
+| **DgKey**                                                                       | &nbsp; | &nbsp; |
+| - Show map                                                                      | ✅     | ?      |
+| - Track key                                                                     | ❌     | ?      |
+| - Select player location                                                        | ❌     | ?      |
+| **[ArchMatCounter](https://zerogwafa.github.io/ArchMatCounter/appconfig.json)** | ?      | ?      |
 
 - 1: Only keyboard activity count as active
 - 2: Detected but cannot place pin
@@ -50,10 +50,18 @@ This project use [Poetry](https://python-poetry.org) as package manager.
 Requires Poetry 1.1.
 
 ```sh
+# Try this first
 poetry install
+# If previous fails and you're on Big Sur, try this instead
+SYSTEM_VERSION_COMPAT=1 poetry install
+
 poetry build
 cp build/lib.*/runekit/image/*.cpython*.* runekit/image/
+
+# If you just want to load AFKWarden
 poetry run python main.py https://runeapps.org/apps/alt1/afkscape/appconfig.json
+# If you'd like to pick what app you load
+poetry run python main.py
 ```
 
 ### Linux additional instruction
@@ -65,9 +73,10 @@ Requires libxcb to be installed
 ~~You'll probably need Command Line Tools to build the C code, run: `xcode-select --install` to get it~~ Currently the native code isn't really used (will be used for OCR features)
 
 You will need to add Python in System Preferences > Security > Privacy in these sections:
-  - Accessibility
-  - Screen Recording 
-    
+
+- Accessibility
+- Screen Recording
+
 Note that Python might appear as the closest macOS application (eg. your terminal emulator) instead of Python
 
 ## Developer
@@ -77,20 +86,20 @@ To debug, go to `chrome://inspect` on Chrome/Chromium.
 
 ## Technical Features
 
-* [Alt1 Compatibility](compatibility.md)
+- [Alt1 Compatibility](compatibility.md)
 
-Platform Feature              | Linux | macOS
-------------------------------|-------|--------
-**Game Manager**              | &nbsp;  | &nbsp;
-Instance change signals       | ❌    | ❌
-**Instance**                  | &nbsp;  | &nbsp;
-alt1_pressed                  | 1     | ✅
-game_activity                 | 2     | ✅
-positionChanged               | ✅    | ✅
-scalingChanged                | ❌    | ❌
-focusChanged                  | ✅    | ✅
-set_taskbar_progress          | ❌    | ❌
-Window capture                | ✅    | ✅
+| Platform Feature        | Linux  | macOS  |
+| ----------------------- | ------ | ------ |
+| **Game Manager**        | &nbsp; | &nbsp; |
+| Instance change signals | ❌     | ❌     |
+| **Instance**            | &nbsp; | &nbsp; |
+| alt1_pressed            | 1      | ✅     |
+| game_activity           | 2      | ✅     |
+| positionChanged         | ✅     | ✅     |
+| scalingChanged          | ❌     | ❌     |
+| focusChanged            | ✅     | ✅     |
+| set_taskbar_progress    | ❌     | ❌     |
+| Window capture          | ✅     | ✅     |
 
 - 1: Works, but the game also receive the key
 - 2: Only detect keyboard activity
@@ -98,7 +107,7 @@ Window capture                | ✅    | ✅
 ## Known issues
 
 - On macOS some values include the size of window decorator, including the screenshot
-  - This can be tested with AfkScape color picker 
+  - This can be tested with AfkScape color picker
 
 ## License
 

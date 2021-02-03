@@ -50,8 +50,18 @@ If you're having trouble finding the downloads at the link, remember to scroll t
 
 Run the following command in your terminal:
 
-```
+```bash
 brew install poetry
 ```
+
+## One last thing...
+
+Before you go and run the commands from the other page, you'll want to change what file directory your terminal is in to be the folder where you downloaded `runekit`. Assuming you downloaded it as instructed in step 1, you can do this by running the following:
+
+```bash
+cd ~/Downloads/runekit
+```
+
+**Note**: if you close and reopen the terminal, you'll need to renavigate to the correct folder (just rerun the above command).
 
 That simple. Now you can go back to the other file and pick up where you left off, [here](../README.md#running).

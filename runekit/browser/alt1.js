@@ -63,7 +63,6 @@
         permissionOverlay: true,
         permissionPixel: true,
         lastWorldHop: 0,
-        currentWorld: -1,
         rsPing: 0,
         rsFps: 60,
         openInfo: '{}',
@@ -145,6 +144,11 @@
 
         get rsLastActive() {
             return window.performance.now() - lastGameActivity;
+        },
+
+        get currentWorld() {
+            if(!syncChan) return -1;
+            return api.world || -1;
         },
 
         userResize(left, top, right, bottom) {
@@ -285,6 +289,10 @@
 
         instance.game_activity_signal.connect(function(){
            lastGameActivity = window.performance.now();
+        });
+
+        instance.world_change_signal.connect(function(){
+           alt1.lastWorldHop = new Date().getTime();
         });
 
         instance.alt1Signal.connect(function (pos){

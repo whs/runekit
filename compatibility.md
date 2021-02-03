@@ -3,8 +3,8 @@
 - [ ] alt1.overlay
 - [ ] alt1.captureMethod
 - [ ] alt1.permission*
-- [ ] alt1.lastWorldHop
-- [ ] alt1.currentWorld
+- [x] alt1.lastWorldHop
+- [x] alt1.currentWorld
 - [ ] alt1.rsPing
 - [ ] alt1.rsFps
 - [ ] alt1.openInfo

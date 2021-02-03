@@ -92,6 +92,7 @@ class Alt1Api(QObject):
         self._game_scaling = self.app.game_instance.get_scaling()
         self._private = Alt1ApiPrivate(self, parent=self)
         self.app.game_instance.game_activity.connect(self.game_activity_signal)
+        self.app.game_instance.worldChanged.connect(self.world_change_signal)
 
         poll_timer = QTimer(self)
         poll_timer.setInterval(250)
@@ -203,6 +204,12 @@ class Alt1Api(QObject):
     gameActive = Property(bool, get_game_active, notify=game_active_change_signal)
 
     game_activity_signal = Signal()
+
+    def get_world(self):
+        return self.app.game_instance.get_world()
+
+    world_change_signal = Signal()
+    world = Property(bool, get_world, notify=world_change_signal)
     # endregion
 
     # region Sync RPC handlers

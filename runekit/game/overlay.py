@@ -2,13 +2,19 @@ from typing import TYPE_CHECKING, Callable, Tuple, Dict
 
 from PySide2.QtCore import Qt, QRect
 from PySide2.QtGui import QGuiApplication, QPen
-from PySide2.QtWidgets import QMainWindow, QGraphicsView, QGraphicsScene, QGraphicsItem, QGraphicsTextItem, \
-    QGraphicsRectItem
+from PySide2.QtWidgets import (
+    QMainWindow,
+    QGraphicsView,
+    QGraphicsScene,
+    QGraphicsItem,
+    QGraphicsRectItem,
+)
 
 if TYPE_CHECKING:
-    from .instance import QuartzGameInstance
+    from .instance import GameInstance
 
-class QuartzOverlay(QMainWindow):
+
+class DesktopWideOverlay(QMainWindow):
     _instances: Dict[int, QGraphicsItem]
     view: QGraphicsView
     scene: QGraphicsScene
@@ -33,9 +39,13 @@ class QuartzOverlay(QMainWindow):
             geom = screen.virtualGeometry()
             virtual_screen = virtual_screen.united(geom)
 
-        self.scene = QGraphicsScene(0, 0, virtual_screen.width(), virtual_screen.height(), parent=self)
+        self.scene = QGraphicsScene(
+            0, 0, virtual_screen.width(), virtual_screen.height(), parent=self
+        )
 
         self.view = QGraphicsView(self.scene, self)
+        self.view.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.view.setStyleSheet("background: transparent")
         self.view.setGeometry(0, 0, virtual_screen.width(), virtual_screen.height())
         self.view.setInteractive(False)
@@ -45,7 +55,9 @@ class QuartzOverlay(QMainWindow):
 
         self.setGeometry(virtual_screen)
 
-    def add_instance(self, instance: 'QuartzGameInstance') -> Tuple[QGraphicsItem, Callable[[], None]]:
+    def add_instance(
+        self, instance: "GameInstance"
+    ) -> Tuple[QGraphicsItem, Callable[[], None]]:
         """Add instance to manage, return a disconnect function and the canvas"""
         positionChanged = lambda rect: self.on_instance_moved(instance, rect)
         instance.positionChanged.connect(positionChanged)
@@ -61,10 +73,10 @@ class QuartzOverlay(QMainWindow):
         self._instances[instance.wid] = gfx
 
         def disconnect():
-            instance.positionChanged.disconnect(positionChanged)
-            instance.focusChanged.disconnect(focusChanged)
             gfx.hide()
             self.scene.removeItem(gfx)
+            instance.positionChanged.disconnect(positionChanged)
+            instance.focusChanged.disconnect(focusChanged)
 
         return gfx, disconnect
 

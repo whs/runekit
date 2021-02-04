@@ -28,7 +28,7 @@ class App:
     def get_window(self, **kwargs) -> AppWindow:
         self.window = AppWindow(app=self, **kwargs)
         self.window.winId()  # force native window
-        self.game_instance.embed_window(self.window.windowHandle())
+        # self.game_instance.embed_window(self.window.windowHandle()) # FIXME
         return self.window
 
     def get_api(self) -> Alt1Api:

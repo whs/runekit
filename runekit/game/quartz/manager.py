@@ -9,7 +9,7 @@ from PySide2.QtGui import QDesktopServices
 from PySide2.QtWidgets import QMessageBox
 
 from .instance import QuartzGameInstance
-from .overlay import QuartzOverlay
+from runekit.game.overlay import DesktopWideOverlay
 from ..instance import GameInstance
 from ..manager import GameManager
 
@@ -18,7 +18,7 @@ has_prompted_accessibility = False
 
 class QuartzGameManager(GameManager):
     _instances: Dict[int, GameInstance]
-    overlay: QuartzOverlay
+    overlay: DesktopWideOverlay
 
     request_accessibility_popup = Signal()
 
@@ -28,14 +28,15 @@ class QuartzGameManager(GameManager):
         self.request_accessibility_popup.connect(self.accessibility_popup)
         self._setup_tap()
 
-        ApplicationServices.AXIsProcessTrustedWithOptions({
-            ApplicationServices.kAXTrustedCheckOptionPrompt: True,
-        })
+        ApplicationServices.AXIsProcessTrustedWithOptions(
+            {
+                ApplicationServices.kAXTrustedCheckOptionPrompt: True,
+            }
+        )
         while not ApplicationServices.AXIsProcessTrusted():
             time.sleep(0.1)
 
         self._setup_overlay()
-
 
     def _setup_tap(self):
         events = [
@@ -59,7 +60,7 @@ class QuartzGameManager(GameManager):
         )
 
     def _setup_overlay(self):
-        self.overlay = QuartzOverlay()
+        self.overlay = DesktopWideOverlay()
         # Seems like QGraphicsView has a delay before applying stylesheet
         # Put some delay to allow it to initialize and not flash
         QTimer.singleShot(1000, lambda: self.overlay.show())
@@ -143,4 +144,3 @@ class QuartzGameManager(GameManager):
             QDesktopServices.openUrl(
                 "x-apple.systempreferences:com.apple.preference.security?Privacy_Screen Recording"
             )
-

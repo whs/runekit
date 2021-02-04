@@ -6,19 +6,23 @@ import xcffib.composite
 import xcffib.xproto
 from PySide2.QtCore import QRect, Signal, Slot
 from PySide2.QtGui import QWindow, QGuiApplication
+from PySide2.QtWidgets import QGraphicsItem
 
 from runekit.game.instance import GameInstance
 from runekit.game.qt import QtGrabMixin, QtEmbedMixin
+from runekit.game.psutil import PsUtilNetStat
+from runekit.game.overlay import DesktopWideOverlay
 from .ximage import zpixmap_shm_to_image
 
 if TYPE_CHECKING:
     from .manager import X11GameManager
 
 
-class X11GameInstance(QtGrabMixin, GameInstance):
+class X11GameInstance(QtGrabMixin, QtEmbedMixin, PsUtilNetStat, GameInstance):
     wid: int
 
     manager: "X11GameManager"
+    overlay: QGraphicsItem
 
     game_last_grab = 0.0
     game_last_image = None
@@ -32,17 +36,19 @@ class X11GameInstance(QtGrabMixin, GameInstance):
         super().__init__(**kwargs)
         self.manager = manager
         self.wid = wid
+        self.pid = manager.get_property(wid, "_NET_WM_PID")
         self.qwindow = QWindow.fromWinId(wid)
         self.logger = logging.getLogger(__name__ + "." + self.__class__.__name__)
         self.embedded_windows = []
-        self._setup()
+        self._setup_x()
+        self._setup_overlay()
 
         self.input_signal.connect(self.on_input)
         self.config_signal.connect(self.on_config)
 
         self._update_is_focused()
 
-    def _setup(self):
+    def _setup_x(self):
         self.manager.xcomposite.RedirectWindow(
             self.wid, xcffib.composite.Redirect.Automatic
         )
@@ -56,11 +62,15 @@ class X11GameInstance(QtGrabMixin, GameInstance):
             ],
         )
 
+    def _setup_overlay(self):
+        self.overlay, self._overlay_disconnect = self.manager.overlay.add_instance(self)
+
     def __del__(self):
         self.manager.connection.core.FreePixmap(self.pixmap_id)
         self.manager.xcomposite.UnredirectWindow(
             self.wid, xcffib.composite.Redirect.Automatic
         )
+        self._overlay_disconnect()
 
     def name_pixmap(self):
         if hasattr(self, "pixmap_id"):
@@ -137,6 +147,9 @@ class X11GameInstance(QtGrabMixin, GameInstance):
     def embed_window(self, window: QWindow):
         super().embed_window(window)
         self.embedded_windows.append(window)
+
+    def get_overlay_area(self) -> QGraphicsItem:
+        return self.overlay
 
     @Slot(xcffib.Event)
     def on_config(self, evt: xcffib.xproto.ConfigureNotifyEvent):

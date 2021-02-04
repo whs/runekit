@@ -24,7 +24,7 @@ from runekit.host import Host
 @click.argument("qt_args", nargs=-1, type=click.UNPROCESSED)
 @click.argument("app_url", required=False)
 def main(app_url, game_index, qt_args):
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.DEBUG)
 
     logging.info("Starting QtWebEngine")
     browser.init()

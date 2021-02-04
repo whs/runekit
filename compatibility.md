@@ -26,7 +26,7 @@
 - [x] alt1.clearTooltip
 - [x] alt1.setTaskbarProgress
 - [ ] alt1.setTitleBarText - Implemented but not validated
-- [ ] alt1.overLayRect
+- [x] alt1.overLayRect
 - [ ] alt1.overLayTextEx
 - [ ] alt1.overLayLine
 - [ ] alt1.overLayImage

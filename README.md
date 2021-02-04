@@ -6,18 +6,15 @@ Alt1-compatible toolbox for RuneScape 3, for Linux and macOS.
 
 ## What works
 
-**Overlay are not supported yet**
-
 | App                                                                             | Linux  | macOS  |
 | ------------------------------------------------------------------------------- | ------ | ------ |
 | **Clue Solver**                                                                 | &nbsp; | &nbsp; |
 | - Text/Emote                                                                    | ✅     | ✅     |
-| - Map scroll                                                                    | ?      | ?      |
-| - Compass                                                                       | ?      | 2      |
+| - Map scroll                                                                    | ✅     | ?      |
+| - Compass                                                                       | 2      | 2      |
 | - Scan                                                                          | ?      | ?      |
-| - Lockbox                                                                       | ?      | ?      |
 | - Celtic knot                                                                   | ?      | ✅     |
-| - Slide                                                                         | ?      | ✅     |
+| - Slide                                                                         | ✅     | ✅     |
 | - Towers                                                                        | ?      | ?      |
 | Example app                                                                     | ✅     | ✅     |
 | **AfkWarden**                                                                   | &nbsp; | &nbsp; |

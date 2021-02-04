@@ -1,17 +1,18 @@
 import logging
-import sys
+import struct
 from typing import List, Dict, Tuple, Union
 
-from PySide2.QtCore import QThread, Slot, Signal, QObject
+import sysv_ipc
 import xcffib
-import xcffib.xproto
 import xcffib.composite
 import xcffib.shm
 import xcffib.xinput
-import sysv_ipc
+import xcffib.xproto
+from PySide2.QtCore import QThread, Slot, QObject
 
 from runekit.game import GameManager
 from .instance import GameInstance, X11GameInstance
+from ..overlay import DesktopWideOverlay
 
 MAX_SHM = 10
 NET_ACTIVE_WINDOW = "_NET_ACTIVE_WINDOW"
@@ -36,6 +37,7 @@ class X11GameManager(GameManager):
         self.xshm = self.connection(xcffib.shm.key)
         self.xinput = self.connection(xcffib.xinput.key)
         self._setup_composite()
+        self._setup_overlay()
 
         self.event_thread = QThread(self)
 
@@ -73,6 +75,10 @@ class X11GameManager(GameManager):
     def get_active_window(self) -> int:
         return self.get_property(self.screen.root, "_NET_ACTIVE_WINDOW")
 
+    def _setup_overlay(self):
+        self.overlay = DesktopWideOverlay()
+        self.overlay.show()
+
     def _setup_composite(self):
         self.xcomposite.QueryVersion(0, 4, is_checked=True)
 
@@ -95,8 +101,8 @@ class X11GameManager(GameManager):
 
         if reply.type == xcffib.xproto.Atom.STRING:
             return reply.value.to_string()[:-1]
-        elif reply.type == xcffib.xproto.Atom.WINDOW:
-            return int.from_bytes(reply.value.buf(), byteorder=sys.byteorder)
+        elif reply.type in (xcffib.xproto.Atom.WINDOW, xcffib.xproto.Atom.CARDINAL):
+            return struct.unpack("=I", reply.value.buf())[0]
 
         return reply.value
 

@@ -84,7 +84,7 @@ class QuartzGameInstance(PsUtilNetStat, GameInstance):
     __game_last_grab = 0.0
     __game_last_image = None
 
-    def __init__(self, manager: 'QuartzGameManager', wid, pid, **kwargs):
+    def __init__(self, manager: "QuartzGameManager", wid, pid, **kwargs):
         super().__init__(**kwargs)
         self.manager = manager
         self.wid = wid
@@ -131,6 +131,7 @@ class QuartzGameInstance(PsUtilNetStat, GameInstance):
             )
 
         objc.context.unregister(self)
+        self._overlay_disconnect()
 
     def get_position(self) -> QRect:
         # The docs say this API is expensive...
@@ -209,6 +210,7 @@ class AXAPIError(Exception):
 
         super().__init__(self.mapping.get(code, f"API Error: {code}"))
 
+
 class NoCapturePermission(Exception):
     def __init__(self):
-        super().__init__('Screen Recording permission is not allowed')
+        super().__init__("Screen Recording permission is not allowed")

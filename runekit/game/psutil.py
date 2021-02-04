@@ -7,6 +7,10 @@ import psutil
 from PySide2.QtCore import QTimer, Slot
 
 logger = logging.getLogger(__name__)
+mode = None
+
+MODE_PROCESS = 1
+MODE_GLOBAL = 2
 
 
 class PsUtilBaseMixin:
@@ -33,7 +37,7 @@ class PsUtilNetStat(PsUtilBaseMixin):
 
     def fetch_world(self) -> Optional[int]:
         try:
-            addrs = psutil.Process(self.pid).connections()
+            addrs = self.__get_connections()
         except psutil.AccessDenied:
             logger.warning("Cannot get connections", exc_info=True)
             return None
@@ -50,11 +54,35 @@ class PsUtilNetStat(PsUtilBaseMixin):
             world = int(matched_name.group(1))
             return world
 
+    def __get_connections(self):
+        global mode
+        if mode is not None:
+            return self.__get_connections_mode(mode)
+
+        last_exc = None
+        for method in [MODE_PROCESS, MODE_GLOBAL]:
+            try:
+                out = self.__get_connections_mode(method)
+                mode = method
+                return out
+            except psutil.AccessDenied as e:
+                last_exc = e
+
+        raise last_exc
+
+    def __get_connections_mode(self, mode_: int):
+        if mode_ is MODE_PROCESS:
+            return psutil.Process(self.pid).connections()
+        elif mode_ is MODE_GLOBAL:
+            return [item for item in psutil.net_connections() if item.pid == self.pid]
+        else:
+            raise ValueError(f"Unknown mode {mode_}")
+
     @Slot()
     def __update_world(self):
         new_world = self.fetch_world()
         if new_world != self.__last_world:
-            logger.info('World hopped from %d to %d', self.__last_world, new_world)
+            logger.info("World hopped from %d to %d", self.__last_world, new_world)
             self.__last_world = new_world
             self.worldChanged.emit(new_world)
 

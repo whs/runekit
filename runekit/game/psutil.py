@@ -54,6 +54,7 @@ class PsUtilNetStat(PsUtilBaseMixin):
     def __update_world(self):
         new_world = self.fetch_world()
         if new_world != self.__last_world:
+            logger.info('World hopped from %d to %d', self.__last_world, new_world)
             self.__last_world = new_world
             self.worldChanged.emit(new_world)
 

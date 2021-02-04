@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
-from PySide2.QtCore import Qt, Slot, QRect, QObject
-from PySide2.QtGui import QIcon
+from PySide2.QtCore import Qt, Slot, QRect, QObject, Signal, QEvent
+from PySide2.QtGui import QIcon, QCloseEvent
 from PySide2.QtWebEngineWidgets import QWebEngineView, QWebEnginePage
 from PySide2.QtWidgets import QMainWindow
 

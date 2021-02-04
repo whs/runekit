@@ -24,11 +24,12 @@ from runekit.host import Host
 @click.argument("qt_args", nargs=-1, type=click.UNPROCESSED)
 @click.argument("app_url", required=False)
 def main(app_url, game_index, qt_args):
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.INFO)
 
     logging.info("Starting QtWebEngine")
     browser.init()
     app = QApplication(["runekit", *qt_args])
+    app.setQuitOnLastWindowClosed(False)
     game_manager = None
     try:
         game_manager = get_platform_manager()
@@ -63,7 +64,8 @@ def main(app_url, game_index, qt_args):
             app_url = dialog.textValue()
 
         logging.info("Loading app")
-        host.start_app(app_url, game)
+        game_app = host.start_app(app_url, game)
+        game_app.window.destroyed.connect(app.quit)
 
         app.exec_()
         sys.exit(0)

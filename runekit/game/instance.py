@@ -2,10 +2,10 @@ import abc
 import time
 from typing import TYPE_CHECKING, Literal, Optional
 
-from PySide2.QtCore import QObject, Signal, Property, QRect, Slot
-
 from PIL import Image
+from PySide2.QtCore import QObject, Signal, Property, QRect, Slot
 from PySide2.QtGui import QWindow
+from PySide2.QtWidgets import QGraphicsItem
 
 if TYPE_CHECKING:
     from .manager import GameManager
@@ -80,3 +80,6 @@ class GameInstance(QObject):
 
     def embed_window(self, window: QWindow):
         pass
+
+    def get_overlay_area(self) -> QGraphicsItem:
+        raise NotImplementedError

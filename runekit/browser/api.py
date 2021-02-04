@@ -20,9 +20,10 @@ from PySide2.QtCore import (
     QRunnable,
     QJsonValue,
 )
-from PySide2.QtGui import QGuiApplication, QCursor, QScreen
+from PySide2.QtGui import QGuiApplication, QCursor, QScreen, QPen, QColor
 from PySide2.QtWebChannel import QWebChannel
 from PySide2.QtWebEngineCore import QWebEngineUrlSchemeHandler, QWebEngineUrlRequestJob
+from PySide2.QtWidgets import QGraphicsRectItem
 
 if TYPE_CHECKING:
     from runekit.app.app import App
@@ -63,6 +64,12 @@ def _image_to_stream(image: Image, x=0, y=0, width=None, height=None) -> bytes:
 def encode_mouse(x: int, y: int) -> int:
     return (x << 16) | y
 
+def decode_color(color: int) -> QColor:
+    r = (color >> 16) & 0xFF
+    g = (color >> 8) & 0xFF
+    b = (color >> 0) & 0xFF
+    a = (color >> 24) & 0xFF
+    return QColor.fromRgb(r, g, b, a)
 
 class Alt1Api(QObject):
     app: "App"
@@ -241,7 +248,6 @@ class Alt1Api(QObject):
             return ""
 
         return _image_to_stream(image, x, y, w, h)
-
     # endregion
 
     # region Async RPC handlers (Slots)
@@ -274,6 +280,26 @@ class Alt1Api(QObject):
         self.app.game_instance.set_taskbar_progress(
             type_map[type_.toDouble(0)], progress.toDouble(0)
         )
+
+    @Slot(int, int, int, int, int, int, int)
+    def overlayRect(self, color: int, x: int, y: int, w: int, h: int, time: int, line_width: int):
+        if not self.app.has_permission("overlay"):
+            raise ApiPermissionDeniedException("overlay")
+
+        try:
+            overlay_area = self.app.game_instance.get_overlay_area()
+        except NotImplementedError:
+            return
+
+        pen = QPen(decode_color(color))
+        pen.setWidth(max(1, line_width))
+
+        gfx = QGraphicsRectItem(x, y, w, h)
+        gfx.setPen(pen)
+        gfx.setParentItem(overlay_area)
+
+        if time > 0:
+            QTimer.singleShot(time, lambda: gfx.scene().removeItem(gfx))
 
     # endregion
 

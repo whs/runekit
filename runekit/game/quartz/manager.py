@@ -9,6 +9,7 @@ from PySide2.QtGui import QDesktopServices
 from PySide2.QtWidgets import QMessageBox
 
 from .instance import QuartzGameInstance
+from .overlay import QuartzOverlay
 from ..instance import GameInstance
 from ..manager import GameManager
 
@@ -17,6 +18,7 @@ has_prompted_accessibility = False
 
 class QuartzGameManager(GameManager):
     _instances: Dict[int, GameInstance]
+    overlay: QuartzOverlay
 
     request_accessibility_popup = Signal()
 
@@ -31,6 +33,8 @@ class QuartzGameManager(GameManager):
         })
         while not ApplicationServices.AXIsProcessTrusted():
             time.sleep(0.1)
+
+        self._setup_overlay()
 
 
     def _setup_tap(self):
@@ -53,6 +57,19 @@ class QuartzGameManager(GameManager):
         Quartz.CFRunLoopAddSource(
             Quartz.CFRunLoopGetCurrent(), source, Quartz.kCFRunLoopCommonModes
         )
+
+    def _setup_overlay(self):
+        self.overlay = QuartzOverlay()
+        # Seems like QGraphicsView has a delay before applying stylesheet
+        # Put some delay to allow it to initialize and not flash
+        QTimer.singleShot(1000, lambda: self.overlay.show())
+
+    def stop(self):
+        try:
+            self.overlay.hide()
+            self.overlay.deleteLater()
+        except RuntimeError:
+            pass
 
     def get_instances(self) -> List[GameInstance]:
         windows = Quartz.CGWindowListCopyWindowInfo(
@@ -127,5 +144,3 @@ class QuartzGameManager(GameManager):
                 "x-apple.systempreferences:com.apple.preference.security?Privacy_Screen Recording"
             )
 
-        # FIXME: Closing this dialog will close the app, idk why
-        # I think Qt recognize the dialog as the last app window (which is untrue)

@@ -9,6 +9,7 @@ from PIL import Image
 from PySide2.QtCore import QRect
 from PySide2.QtGui import QGuiApplication
 import ApplicationServices
+from PySide2.QtWidgets import QGraphicsItem
 
 from ..instance import GameInstance
 from ..psutil import PsUtilNetStat
@@ -78,6 +79,7 @@ def on_ax_event(observer, element, notification, ptr):
 
 class QuartzGameInstance(PsUtilNetStat, GameInstance):
     _is_active = False
+    overlay: QGraphicsItem
 
     __game_last_grab = 0.0
     __game_last_image = None
@@ -92,6 +94,7 @@ class QuartzGameInstance(PsUtilNetStat, GameInstance):
 
         self._setup_observer()
         self.update_is_active()
+        self.overlay, self._overlay_disconnect = self.manager.overlay.add_instance(self)
 
     def _setup_observer(self):
         self._ax_element = ApplicationServices.AXUIElementCreateApplication(self.pid)
@@ -184,6 +187,9 @@ class QuartzGameInstance(PsUtilNetStat, GameInstance):
         )
         out = cgimageref_to_image(imgref)
         return out.resize((w, h), Image.NEAREST)
+
+    def get_overlay_area(self) -> QGraphicsItem:
+        return self.overlay
 
 
 class AXAPIError(Exception):

@@ -205,7 +205,13 @@
         },
 
         overLayRect(color, x, y, w, h, time, lineWidth) {
-            console.trace('overLayRect');
+            channel.then(function(chan){
+               chan.objects.alt1.overlayRect(color, x, y, w, h, time, lineWidth);
+            });
+            return true;
+        },
+        overLayText(str, color, size, x, y, time) {
+            console.trace('overLayText');
             return false;
         },
         overLayTextEx(str, color, size, x, y, time, fontname, centered, shadow) {

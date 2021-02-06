@@ -36,6 +36,7 @@ Alt1-compatible toolbox for RuneScape 3, for Linux and macOS.
 | - Track key                                                                     | ❌     | ?      |
 | - Select player location                                                        | ❌     | ?      |
 | **[ArchMatCounter](https://zerogwafa.github.io/ArchMatCounter/appconfig.json)** | ?      | ?      |
+| **Bank price checker**                                                          | ✅     | ?      |
 
 - 1: Only keyboard activity count as active
 - 2: Detected but cannot place pin

@@ -205,18 +205,24 @@
         },
 
         overLayRect(color, x, y, w, h, time, lineWidth) {
-            channel.then(function(chan){
-               chan.objects.alt1.overlayRect(color, x, y, w, h, time, lineWidth);
-            });
-            return true;
+            return syncRpc({func: 'overLayRect', color: color, x: x, y: y, w: w, h: h, timeout: time, line_width: lineWidth});
         },
         overLayText(str, color, size, x, y, time) {
-            console.trace('overLayText');
-            return false;
+            return alt1.overLayTextEx(str, color, size, x, y, time, '', false, true);
         },
         overLayTextEx(str, color, size, x, y, time, fontname, centered, shadow) {
-            console.trace('overLayTextEx');
-            return false;
+            return syncRpc({
+                func: 'overLayTextEx',
+                message: str,
+                color: color,
+                size: size,
+                x: x,
+                y: y,
+                timeout: time,
+                font_name: fontname,
+                centered: centered,
+                shadow: shadow
+            });
         },
         overLayLine(color, width, x1, y1, x2, y2, time) {
             console.trace('overLayLine');
@@ -227,10 +233,10 @@
             return false;
         },
         overLayClearGroup(group) {
-            console.trace('overLayClearGroup');
+            return syncRpc({func: 'overLayClearGroup', name: group});
         },
         overLaySetGroup(group) {
-            console.trace('overLaySetGroup');
+            return syncRpc({func: 'overLaySetGroup', name: group});
         },
         overLayFreezeGroup(group) {
             console.trace('overLayFreezeGroup');
@@ -242,7 +248,9 @@
             console.trace('overLayRefreshGroup');
         },
         overLaySetGroupZIndex(groupname, zIndex) {
-            console.trace('overLaySetGroupZIndex');
+            asyncOverlayCall(function(chan){
+                chan.objects.alt1.overlaySetGroupZIndex(groupname, zIndex);
+            });
         },
 
         getRegion(x, y, w, h) {
@@ -278,7 +286,9 @@
         // },
         // bindFindSubImg(id, imgstr, imgwidth, x, y, w, h) {
         //     return '';
-        // }
+        // },
+        addOCRFont(){
+        },
     };
 
     channel.then(function(chan){

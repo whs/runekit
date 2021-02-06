@@ -27,15 +27,16 @@
 - [x] alt1.setTaskbarProgress
 - [ ] alt1.setTitleBarText - Implemented but not validated
 - [x] alt1.overLayRect
-- [ ] alt1.overLayTextEx
+- [x] alt1.overLayText
+- [x] alt1.overLayTextEx
 - [ ] alt1.overLayLine
 - [ ] alt1.overLayImage
-- [ ] alt1.overLayClearGroup
-- [ ] alt1.overLaySetGroup
+- [x] alt1.overLayClearGroup
+- [x] alt1.overLaySetGroup
 - [ ] alt1.overLayFreezeGroup
 - [ ] alt1.overLayContinueGroup
 - [ ] alt1.overLayRefreshGroup
-- [ ] alt1.overLaySetGroupZIndex
+- [x] alt1.overLaySetGroupZIndex
 - [x] alt1.getRegion
 - [ ] alt1.getRegionMulti
 - [x] alt1.bindRegion

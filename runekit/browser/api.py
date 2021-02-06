@@ -1,7 +1,7 @@
 import base64
+import collections
 import json
 import logging
-import time
 import secrets
 from typing import TYPE_CHECKING, Dict, Callable, List
 from urllib.parse import urljoin
@@ -19,11 +19,17 @@ from PySide2.QtCore import (
     QThreadPool,
     QRunnable,
     QJsonValue,
+    Qt,
 )
-from PySide2.QtGui import QGuiApplication, QCursor, QScreen, QPen, QColor
+from PySide2.QtGui import QGuiApplication, QCursor, QScreen, QPen, QColor, QFont
 from PySide2.QtWebChannel import QWebChannel
 from PySide2.QtWebEngineCore import QWebEngineUrlSchemeHandler, QWebEngineUrlRequestJob
-from PySide2.QtWidgets import QGraphicsRectItem
+from PySide2.QtWidgets import (
+    QGraphicsRectItem,
+    QGraphicsItem,
+    QGraphicsTextItem,
+    QGraphicsDropShadowEffect,
+)
 
 if TYPE_CHECKING:
     from runekit.app.app import App
@@ -64,12 +70,14 @@ def _image_to_stream(image: Image, x=0, y=0, width=None, height=None) -> bytes:
 def encode_mouse(x: int, y: int) -> int:
     return (x << 16) | y
 
+
 def decode_color(color: int) -> QColor:
     r = (color >> 16) & 0xFF
     g = (color >> 8) & 0xFF
     b = (color >> 0) & 0xFF
     a = (color >> 24) & 0xFF
     return QColor.fromRgb(r, g, b, a)
+
 
 class Alt1Api(QObject):
     app: "App"
@@ -82,16 +90,26 @@ class Alt1Api(QObject):
     _game_active = False
     _game_position: QRect
     _game_scaling: float
+    # TODO: I think this could be implemented by QGraphicsItemGroup, maybe even more performant
+    _overlay_group = ""
+    _overlay_groups: Dict[str, List[QGraphicsItem]]
 
     def __init__(self, app, **kwargs):
         super().__init__(**kwargs)
         self.app = app
         self._bound_regions = []
+        self._overlay_groups = collections.defaultdict(list)
 
         self.rpc_funcs = {
             "getRegion": self.get_region,
             "bindRegion": self.bind_region,
             "bindGetRegion": self.bind_get_region,
+            # FIXME: We could speedup overlay calls by making them async
+            # but they should come in order. Maybe a queue?
+            "overLaySetGroup": self.overlay_set_group,
+            "overLayClearGroup": self.overlay_clear_group,
+            "overLayTextEx": self.overlay_text,
+            "overLayRect": self.overlay_rect,
         }
 
         self._update_screen_info()
@@ -121,6 +139,26 @@ class Alt1Api(QObject):
         self.screen_update_signal.emit()
 
     screen_update_signal = Signal()
+
+    def _finalize_gfx(self, gfx: QGraphicsItem, timeout: int):
+        timeout = min(20000, max(timeout, 1))
+
+        group_name = self._overlay_group
+        self._overlay_groups[group_name].append(gfx)
+
+        def hide():
+            try:
+                gfx.scene().removeItem(gfx)
+            except AttributeError:
+                pass
+
+            try:
+                self._overlay_groups[group_name].remove(gfx)
+            except (KeyError, ValueError):
+                pass
+
+        QTimer.singleShot(timeout, hide)
+
     # endregion
 
     # region Qt Properties
@@ -248,6 +286,98 @@ class Alt1Api(QObject):
             return ""
 
         return _image_to_stream(image, x, y, w, h)
+
+    def overlay_set_group(self, name: str):
+        if not self.app.has_permission("overlay"):
+            raise ApiPermissionDeniedException("overlay")
+
+        self._overlay_group = name
+
+        return True
+
+    def overlay_clear_group(self, name: str):
+        if not self.app.has_permission("overlay"):
+            raise ApiPermissionDeniedException("overlay")
+
+        for item in self._overlay_groups.get(name, []):
+            item.scene().removeItem(item)
+
+        try:
+            del self._overlay_groups[name]
+        except KeyError:
+            pass
+
+        return True
+
+    def overlay_rect(
+        self, color: int, x: int, y: int, w: int, h: int, timeout: int, line_width: int
+    ):
+        if not self.app.has_permission("overlay"):
+            raise ApiPermissionDeniedException("overlay")
+
+        try:
+            overlay_area = self.app.game_instance.get_overlay_area()
+        except NotImplementedError:
+            return
+
+        pen = QPen(decode_color(color))
+        pen.setWidthF(min(1.0, line_width / 10))
+
+        gfx = QGraphicsRectItem(x, y, w, h)
+        gfx.setPen(pen)
+        gfx.setParentItem(overlay_area)
+
+        self._finalize_gfx(gfx, timeout)
+
+        return True
+
+    def overlay_text(
+        self,
+        message: str,
+        color: int,
+        size: int,
+        x: int,
+        y: int,
+        timeout: int,
+        font_name: str,
+        centered: bool,
+        shadow: bool,
+    ):
+        if not self.app.has_permission("overlay"):
+            raise ApiPermissionDeniedException("overlay")
+
+        try:
+            overlay_area = self.app.game_instance.get_overlay_area()
+        except NotImplementedError:
+            return
+
+        gfx = QGraphicsTextItem(message)
+        gfx.setDefaultTextColor(decode_color(color))
+
+        font = QFont(font_name, min(50, size))
+        font.setStyleHint(QFont.SansSerif)
+        gfx.setFont(font)
+
+        if shadow:
+            effect = QGraphicsDropShadowEffect(gfx)
+            effect.setBlurRadius(0)
+            effect.setColor(Qt.GlobalColor.black)
+            effect.setOffset(1, 1)
+            gfx.setGraphicsEffect(effect)
+
+        if centered:
+            # The provided x, y is at the center of the text
+            bound = gfx.boundingRect()
+            gfx.setPos(x - (bound.width() / 2), y - (bound.height() / 2))
+        else:
+            gfx.setPos(x, y)
+
+        gfx.setParentItem(overlay_area)
+
+        self._finalize_gfx(gfx, timeout)
+
+        return True
+
     # endregion
 
     # region Async RPC handlers (Slots)
@@ -281,25 +411,10 @@ class Alt1Api(QObject):
             type_map[type_.toDouble(0)], progress.toDouble(0)
         )
 
-    @Slot(int, int, int, int, int, int, int)
-    def overlayRect(self, color: int, x: int, y: int, w: int, h: int, time: int, line_width: int):
-        if not self.app.has_permission("overlay"):
-            raise ApiPermissionDeniedException("overlay")
-
-        try:
-            overlay_area = self.app.game_instance.get_overlay_area()
-        except NotImplementedError:
-            return
-
-        pen = QPen(decode_color(color))
-        pen.setWidth(max(1, line_width))
-
-        gfx = QGraphicsRectItem(x, y, w, h)
-        gfx.setPen(pen)
-        gfx.setParentItem(overlay_area)
-
-        if time > 0:
-            QTimer.singleShot(time, lambda: gfx.scene().removeItem(gfx))
+    @Slot(str, int)
+    def overlaySetGroupZIndex(self, name: str, z_index: int):
+        for item in self._overlay_groups.get(name, []):
+            item.setZValue(z_index)
 
     # endregion
 
@@ -425,7 +540,14 @@ class RuneKitSchemeHandler(QWebEngineUrlSchemeHandler):
 
         processor = RuneKitRequestProcess(self, req, parent=req)
         processor.signals.successSignal.connect(self.on_success)
-        self.thread_pool.start(processor)
+        if "overLay" in req.requestUrl().path():
+            # FIXME: RuneKitRequestProcess should be able to notify main thread that
+            # this should run in main thread
+
+            # Overlay functions require main thread
+            processor.run()
+        else:
+            self.thread_pool.start(processor)
 
     @Slot(QWebEngineUrlRequestJob, bytes, bytes)
     def on_success(self, request, content_type, reply):

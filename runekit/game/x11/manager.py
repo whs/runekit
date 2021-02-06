@@ -102,7 +102,7 @@ class X11GameManager(GameManager):
         if reply.type == xcffib.xproto.Atom.STRING:
             return reply.value.to_string()[:-1]
         elif reply.type in (xcffib.xproto.Atom.WINDOW, xcffib.xproto.Atom.CARDINAL):
-            return struct.unpack("=I", reply.value.buf())[0]
+            return struct.unpack("=I", reply.value.buf()[:4])[0]
 
         return reply.value
 

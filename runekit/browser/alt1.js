@@ -8,24 +8,33 @@
     // (even though if discovered, still cannot bypass profiles restriction)
     const RPC_TOKEN = '%%RPC_TOKEN%%'; // replaced in profile.py
 
+    if (window.parent !== window) {
+        // If running in subframe just use parent's alt1.
+        // Can't run separate instances as we have request ids
+        // that the native part don't know about
+        let wnd = window;
+        while(wnd.parent && wnd.parent !== wnd) {
+            // this is not going to work cross origin
+            wnd = wnd.parent;
+        }
+
+        window.alt1 = wnd.alt1;
+        return;
+    }
+
     // FIXME: Even though RPC is secure, this is not...
     let syncChan;
     let api;
     let channel = new Promise(function (resolve) {
         let setup = function(){
-            let wnd = window;
-            while(wnd.parent && wnd.parent !== wnd) {
-                // this is not going to work cross origin
-                wnd = wnd.parent;
-            }
-            new QWebChannel(wnd.qt.webChannelTransport, function (chan) {
+            new QWebChannel(qt.webChannelTransport, function (chan) {
                 syncChan = chan;
                 api = chan.objects.alt1;
                 resolve(chan);
             });
         };
         if (typeof window.qt !== 'undefined') {
-            setup()
+            setup();
         } else {
             document.addEventListener('DOMContentLoaded', setup);
         }

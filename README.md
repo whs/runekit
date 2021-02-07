@@ -11,10 +11,11 @@ Alt1-compatible toolbox for RuneScape 3, for Linux and macOS.
 | **Clue Solver**                                                                 | &nbsp; | &nbsp; |
 | - Text/Emote                                                                    | ✅     | ✅     |
 | - Map scroll                                                                    | ✅     | ?      |
-| - Compass                                                                       | ✅     | 2      |
+| - Compass                                                                       | ✅     | ?      |
 | - Scan                                                                          | ✅     | ?      |
 | - Celtic knot                                                                   | ✅     | ✅     |
 | - Slide                                                                         | ✅     | ✅     |
+| - Lockbox                                                                       | ✅     | ?      |
 | - Towers                                                                        | ?      | ?      |
 | Example app                                                                     | ✅     | ✅     |
 | **AfkWarden**                                                                   | &nbsp; | &nbsp; |

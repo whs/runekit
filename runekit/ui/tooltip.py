@@ -1,6 +1,6 @@
-from typing import Union, Optional
+from typing import Union
 
-from PySide2.QtCore import Qt, QTimer, Slot, QSize
+from PySide2.QtCore import Qt, QTimer, Slot
 from PySide2.QtGui import QCursor
 from PySide2.QtWidgets import QLabel, QMainWindow
 

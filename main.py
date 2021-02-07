@@ -32,40 +32,45 @@ def main(app_url, game_index, qt_args):
     app.setQuitOnLastWindowClosed(False)
     game_manager = None
     try:
-        game_manager = get_platform_manager()
-        logging.info("Scanning for game instances")
-        game_instances = game_manager.get_instances()
-        logging.info("Found %d instances", len(game_instances))
-        if len(game_instances) == 0:
-            QMessageBox(
-                QMessageBox.Critical,
-                "Game not found",
-                "Cannot find RuneScape. Launch the game first",
-            ).exec_()
-            return
-
         host = Host()
-        game = game_instances[game_index]
 
-        if app_url is None:
-            dialog = QInputDialog()
-            dialog.setComboBoxEditable(True)
-            dialog.setComboBoxItems(
-                [
-                    "https://runeapps.org/apps/alt1/example/appconfig.json",
-                    "https://runeapps.org/apps/clue/appconfig.json",
-                    "https://runeapps.org/apps/alt1/afkscape/appconfig.json",
-                ]
-            )
-            dialog.setLabelText("Enter appconfig URL")
-            dialog.setWindowTitle("RuneKit")
-            if dialog.exec_() == QDialog.DialogCode.Rejected:
+        if app_url == "settings":
+            settings_wnd = host.open_settings()
+            settings_wnd.destroyed.connect(app.quit)
+        else:
+            game_manager = get_platform_manager()
+            logging.info("Scanning for game instances")
+            game_instances = game_manager.get_instances()
+            logging.info("Found %d instances", len(game_instances))
+            if len(game_instances) == 0:
+                QMessageBox(
+                    QMessageBox.Critical,
+                    "Game not found",
+                    "Cannot find RuneScape. Launch the game first",
+                ).exec_()
                 return
-            app_url = dialog.textValue()
 
-        logging.info("Loading app")
-        game_app = host.start_app(app_url, game)
-        game_app.window.destroyed.connect(app.quit)
+            game = game_instances[game_index]
+
+            if app_url is None:
+                dialog = QInputDialog()
+                dialog.setComboBoxEditable(True)
+                dialog.setComboBoxItems(
+                    [
+                        "https://runeapps.org/apps/alt1/example/appconfig.json",
+                        "https://runeapps.org/apps/clue/appconfig.json",
+                        "https://runeapps.org/apps/alt1/afkscape/appconfig.json",
+                    ]
+                )
+                dialog.setLabelText("Enter appconfig URL")
+                dialog.setWindowTitle("RuneKit")
+                if dialog.exec_() == QDialog.DialogCode.Rejected:
+                    return
+                app_url = dialog.textValue()
+
+            logging.info("Loading app")
+            game_app = host.start_app(app_url, game)
+            game_app.window.destroyed.connect(app.quit)
 
         app.exec_()
         sys.exit(0)

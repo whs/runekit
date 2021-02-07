@@ -1,16 +1,15 @@
 from typing import TYPE_CHECKING
 
-from PySide2.QtWidgets import QWidget
-
 from runekit.alt1.utils import fetch_manifest
 from runekit.app import App
+from runekit.host.settings import SettingsDialog
 from runekit.ui import AutoNotifier
 
 if TYPE_CHECKING:
     from runekit.game import GameInstance
 
 
-class Host(QWidget):
+class Host:
     """Host is the root of our application"""
 
     def __init__(self):
@@ -26,5 +25,10 @@ class Host(QWidget):
             game_instance=instance,
             source_url=manifest_url,
         )
-        app.get_window(parent=self).show()
+        app.get_window().show()
         return app
+
+    def open_settings(self):
+        wnd = SettingsDialog(self)
+        wnd.show()
+        return wnd

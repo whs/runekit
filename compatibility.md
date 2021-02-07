@@ -33,9 +33,9 @@
 - [ ] alt1.overLayImage
 - [x] alt1.overLayClearGroup
 - [x] alt1.overLaySetGroup
-- [ ] alt1.overLayFreezeGroup
-- [ ] alt1.overLayContinueGroup
-- [ ] alt1.overLayRefreshGroup
+- [x] alt1.overLayFreezeGroup
+- [x] alt1.overLayContinueGroup
+- [x] alt1.overLayRefreshGroup
 - [x] alt1.overLaySetGroupZIndex
 - [x] alt1.getRegion
 - [ ] alt1.getRegionMulti

@@ -10,6 +10,7 @@ from PySide2.QtWidgets import (
     QGraphicsDropShadowEffect,
     QGraphicsTextItem,
     QGraphicsRectItem,
+    QGraphicsItemGroup,
 )
 
 from .utils import decode_color
@@ -19,7 +20,8 @@ if TYPE_CHECKING:
 
 
 def barrier(f):
-    """Mark f as sync barrier - all preceeding calls must be finished"""
+    """Mark f as sync barrier - all preceeding calls must be finished.
+    Only affect calls from scheduler"""
     f.barrier = True
     return f
 
@@ -36,8 +38,9 @@ def ensure_overlay(f):
 
 class OverlayApi(QObject):
     # TODO: I think this could be implemented by QGraphicsItemGroup, maybe even more performant
-    _overlay_group = ""
-    _overlay_groups: Dict[str, List[QGraphicsItem]]
+    current_group = ""
+    groups: Dict[str, List[QGraphicsItem]]
+    frozen_group: Dict[str, QGraphicsItemGroup]
     queue: List[Tuple[int, str, List]]
     last_call_id: Optional[int] = None
     overlay_area: Optional[QGraphicsItem] = None
@@ -46,8 +49,7 @@ class OverlayApi(QObject):
         super().__init__(**kwargs)
         self.logger = logging.getLogger(__name__)
         self.api = base_api
-        self._overlay_groups = collections.defaultdict(list)
-        self.queue = []
+        self.reset()
 
         try:
             self.overlay_area = self.api.app.game_instance.get_overlay_area()
@@ -61,7 +63,7 @@ class OverlayApi(QObject):
 
         if call_id == 0:
             self.logger.info("Call ID reset")
-            self.clear_all()
+            self.reset()
 
         self.queue.append((call_id, command, args))
         self.queue.sort(key=lambda x: x[0])
@@ -93,11 +95,19 @@ class OverlayApi(QObject):
                     exc_info=True,
                 )
 
-    def _finalize_gfx(self, gfx: QGraphicsItem, timeout: int):
+    def _finalize_gfx(
+        self, gfx: QGraphicsItem, timeout: int, group: Optional[str] = None
+    ):
         timeout = min(20000, max(timeout, 1))
 
-        group_name = self._overlay_group
-        self._overlay_groups[group_name].append(gfx)
+        if group is None:
+            group = self.current_group
+
+        if group in self.frozen_group:
+            self.frozen_group[group].addToGroup(gfx)
+        else:
+            self.groups[group].append(gfx)
+            gfx.setParentItem(self.overlay_area)
 
         def hide():
             try:
@@ -106,35 +116,64 @@ class OverlayApi(QObject):
                 pass
 
             try:
-                self._overlay_groups[group_name].remove(gfx)
+                self.groups[group].remove(gfx)
             except (KeyError, ValueError):
                 pass
 
         QTimer.singleShot(timeout, hide)
 
-    def clear_all(self):
-        for item in self._overlay_groups.values():
-            item.scene().removeItem(item)
+    def reset(self):
+        if hasattr(self, "groups"):
+            for item in self.groups.values():
+                item.scene().removeItem(item)
 
-        self._overlay_groups = collections.defaultdict(list)
+        self.groups = collections.defaultdict(list)
+        self.frozen_group = {}
         self.queue = []
         self.last_call_id = None
 
     @barrier
     @ensure_overlay
     def overlay_set_group(self, name: str):
-        self._overlay_group = name
+        self.current_group = name
 
     @barrier
     @ensure_overlay
     def overlay_clear_group(self, name: str):
-        for item in self._overlay_groups.get(name, []):
+        for item in self.groups.get(name, []):
             item.scene().removeItem(item)
 
         try:
-            del self._overlay_groups[name]
+            del self.groups[name]
         except KeyError:
             pass
+
+    @barrier
+    @ensure_overlay
+    def overlay_freeze_group(self, name: str):
+        if name in self.frozen_group:
+            return
+
+        self.frozen_group[name] = QGraphicsItemGroup()
+
+    @barrier
+    @ensure_overlay
+    def overlay_continue_group(self, name: str):
+        if name not in self.frozen_group:
+            return
+
+        gfx = self.frozen_group[name]
+        del self.frozen_group[name]
+        self._finalize_gfx(gfx, 20000, group=name)
+
+    @barrier
+    @ensure_overlay
+    def overlay_refresh_group(self, name: str):
+        if name not in self.frozen_group:
+            return
+
+        self.overlay_continue_group(name)
+        self.overlay_freeze_group(name)
 
     @ensure_overlay
     def overlay_rect(
@@ -145,7 +184,6 @@ class OverlayApi(QObject):
 
         gfx = QGraphicsRectItem(x, y, w, h)
         gfx.setPen(pen)
-        gfx.setParentItem(self.overlay_area)
 
         self._finalize_gfx(gfx, timeout)
 
@@ -183,11 +221,9 @@ class OverlayApi(QObject):
         else:
             gfx.setPos(x, y)
 
-        gfx.setParentItem(self.overlay_area)
-
         self._finalize_gfx(gfx, timeout)
 
     @ensure_overlay
     def overlay_set_group_z(self, name: str, z_index: int):
-        for item in self._overlay_groups.get(name, []):
+        for item in self.groups.get(name, []):
             item.setZValue(z_index)

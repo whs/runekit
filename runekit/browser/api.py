@@ -290,6 +290,27 @@ class Alt1Api(QObject):
 
         self._overlay.enqueue(call_id, "overlay_clear_group", name)
 
+    @Slot(int, str)
+    def overlayFreezeGroup(self, call_id, name):
+        if not self.app.has_permission("overlay"):
+            raise ApiPermissionDeniedException("overlay")
+
+        self._overlay.enqueue(call_id, "overlay_freeze_group", name)
+
+    @Slot(int, str)
+    def overlayContinueGroup(self, call_id, name):
+        if not self.app.has_permission("overlay"):
+            raise ApiPermissionDeniedException("overlay")
+
+        self._overlay.enqueue(call_id, "overlay_continue_group", name)
+
+    @Slot(int, str)
+    def overlayRefreshGroup(self, call_id, name):
+        if not self.app.has_permission("overlay"):
+            raise ApiPermissionDeniedException("overlay")
+
+        self._overlay.enqueue(call_id, "overlay_refresh_group", name)
+
     @Slot(int, str, int)
     def overlaySetGroupZIndex(self, call_id, group, zIndex):
         if not self.app.has_permission("overlay"):

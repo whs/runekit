@@ -241,13 +241,22 @@
             return true;
         },
         overLayFreezeGroup(group) {
-            console.trace('overLayFreezeGroup');
+            channel.then(function(chan){
+                chan.objects.alt1.overlayFreezeGroup(drawCallId++, group);
+            });
+            return true;
         },
         overLayContinueGroup(group) {
-            console.trace('overLayContinueGroup');
+            channel.then(function(chan){
+                chan.objects.alt1.overlayContinueGroup(drawCallId++, group);
+            });
+            return true;
         },
         overLayRefreshGroup(group) {
-            console.trace('overLayRefreshGroup');
+            channel.then(function(chan){
+                chan.objects.alt1.overlayRefreshGroup(drawCallId++, group);
+            });
+            return true;
         },
         overLaySetGroupZIndex(group, zIndex) {
             channel.then(function(chan){

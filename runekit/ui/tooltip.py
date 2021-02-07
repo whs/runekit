@@ -15,8 +15,8 @@ class TooltipManager(QMainWindow):
 
     def __init__(self):
         super().__init__(
-            flags=Qt.Dialog
-            | Qt.X11BypassWindowManagerHint
+            flags=Qt.Popup
+            | Qt.FramelessWindowHint
             | Qt.WindowStaysOnTopHint
             | Qt.WindowTransparentForInput
         )

@@ -180,7 +180,7 @@ class OverlayApi(QObject):
         self, color: int, x: int, y: int, w: int, h: int, timeout: int, line_width: int
     ):
         pen = QPen(decode_color(color))
-        pen.setWidthF(min(1.0, line_width / 10))
+        pen.setWidthF(max(1.0, line_width / 10))
 
         gfx = QGraphicsRectItem(x, y, w, h)
         gfx.setPen(pen)

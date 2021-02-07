@@ -247,12 +247,21 @@ class Alt1Api(QObject):
         )
 
     @Slot(int, int, int, int, int, int, int, int)
-    def overlayRect(self, call_id, color, x, y, w, h, time, line_width):
+    def overlayRect(self, call_id, color, x, y, w, h, timeout, line_width):
         if not self.app.has_permission("overlay"):
             raise ApiPermissionDeniedException("overlay")
 
         self._overlay.enqueue(
-            call_id, "overlay_rect", color, x, y, w, h, time, line_width
+            call_id, "overlay_rect", color, x, y, w, h, timeout, line_width
+        )
+
+    @Slot(int, int, int, int, int, int, int, int)
+    def overlayLine(self, call_id, color, width, x1, y1, x2, y2, timeout):
+        if not self.app.has_permission("overlay"):
+            raise ApiPermissionDeniedException("overlay")
+
+        self._overlay.enqueue(
+            call_id, "overlay_line", color, width, x1, y1, x2, y2, timeout
         )
 
     @Slot(int, str, int, int, int, int, int, str, bool, bool)

@@ -13,7 +13,12 @@
     let api;
     let channel = new Promise(function (resolve) {
         let setup = function(){
-            new QWebChannel(qt.webChannelTransport, function (chan) {
+            let wnd = window;
+            while(wnd.parent && wnd.parent !== wnd) {
+                // this is not going to work cross origin
+                wnd = wnd.parent;
+            }
+            new QWebChannel(wnd.qt.webChannelTransport, function (chan) {
                 syncChan = chan;
                 api = chan.objects.alt1;
                 resolve(chan);
@@ -54,8 +59,8 @@
 
     window.alt1 = {
         overlay: {},
-        version: '1.1.1',
-        versionint: 1001001,
+        version: '1.2.0',
+        versionint: 1002000,
         maxtransfer: 4000000, // also hardcoded in lib...
         skinName: '',
         captureMethod: '',
@@ -221,8 +226,10 @@
             return true;
         },
         overLayLine(color, width, x1, y1, x2, y2, time) {
-            console.trace('overLayLine');
-            return false;
+            channel.then(function(chan){
+                chan.objects.alt1.overlayLine(drawCallId++, color, width, x1, y1, x2, y2, time);
+            });
+            return true;
         },
         overLayImage(x, y, imgstr, imgwidth, time) {
             console.trace('overLayImage');

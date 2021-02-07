@@ -61,5 +61,6 @@ class WebProfile(QWebEngineProfile):
         script.setWorldId(QWebEngineScript.MainWorld)
         script.setInjectionPoint(QWebEngineScript.DocumentCreation)
         script.setSourceCode(src.replace("%%RPC_TOKEN%%", self.rpc_secret))
+        script.setRunsOnSubFrames(True)
 
         self.scripts().insert(script)

@@ -9,9 +9,8 @@ from PySide2.QtGui import QWindow, QGuiApplication
 from PySide2.QtWidgets import QGraphicsItem
 
 from runekit.game.instance import GameInstance
-from runekit.game.qt import QtGrabMixin, QtEmbedMixin
 from runekit.game.psutil import PsUtilNetStat
-from runekit.game.overlay import DesktopWideOverlay
+from runekit.game.qt import QtGrabMixin, QtEmbedMixin
 from .ximage import zpixmap_shm_to_image
 
 if TYPE_CHECKING:
@@ -20,6 +19,7 @@ if TYPE_CHECKING:
 
 class X11GameInstance(QtGrabMixin, QtEmbedMixin, PsUtilNetStat, GameInstance):
     wid: int
+    refresh_rate = 100
 
     manager: "X11GameManager"
     overlay: QGraphicsItem

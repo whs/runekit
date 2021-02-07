@@ -11,6 +11,7 @@ from PySide2.QtWidgets import (
     QGraphicsTextItem,
     QGraphicsRectItem,
     QGraphicsItemGroup,
+    QGraphicsLineItem,
 )
 
 from .utils import decode_color
@@ -183,6 +184,25 @@ class OverlayApi(QObject):
         pen.setWidthF(max(1.0, line_width / 10))
 
         gfx = QGraphicsRectItem(x, y, w, h)
+        gfx.setPen(pen)
+
+        self._finalize_gfx(gfx, timeout)
+
+    @ensure_overlay
+    def overlay_line(
+        self,
+        color: int,
+        line_width: int,
+        x1: int,
+        y1: int,
+        x2: int,
+        y2: int,
+        timeout: int,
+    ):
+        pen = QPen(decode_color(color))
+        pen.setWidthF(max(1.0, line_width / 10))
+
+        gfx = QGraphicsLineItem(x1, y1, x2, y2)
         gfx.setPen(pen)
 
         self._finalize_gfx(gfx, timeout)

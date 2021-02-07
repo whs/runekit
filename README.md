@@ -11,9 +11,9 @@ Alt1-compatible toolbox for RuneScape 3, for Linux and macOS.
 | **Clue Solver**                                                                 | &nbsp; | &nbsp; |
 | - Text/Emote                                                                    | ✅     | ✅     |
 | - Map scroll                                                                    | ✅     | ?      |
-| - Compass                                                                       | 2      | 2      |
-| - Scan                                                                          | ?      | ?      |
-| - Celtic knot                                                                   | ?      | ✅     |
+| - Compass                                                                       | ✅     | 2      |
+| - Scan                                                                          | ✅     | ?      |
+| - Celtic knot                                                                   | ✅     | ✅     |
 | - Slide                                                                         | ✅     | ✅     |
 | - Towers                                                                        | ?      | ?      |
 | Example app                                                                     | ✅     | ✅     |
@@ -39,7 +39,6 @@ Alt1-compatible toolbox for RuneScape 3, for Linux and macOS.
 | **Bank price checker**                                                          | ✅     | ?      |
 
 - 1: Only keyboard activity count as active
-- 2: Detected but cannot place pin
 
 ## Installation setup
 

@@ -34,7 +34,7 @@ Alt1-compatible toolbox for RuneScape 3, for Linux and macOS.
 | - Item drops                                                                    | ?      | ?      |
 | **DgKey**                                                                       | &nbsp; | &nbsp; |
 | - Show map                                                                      | ✅     | ?      |
-| - Track key                                                                     | ❌     | ?      |
+| - Track key                                                                     | ✅     | ?      |
 | - Select player location                                                        | ❌     | ?      |
 | **[ArchMatCounter](https://zerogwafa.github.io/ArchMatCounter/appconfig.json)** | ?      | ?      |
 | **Bank price checker**                                                          | ✅     | ?      |

@@ -50,6 +50,7 @@
     }
 
     let lastGameActivity = window.performance.now();
+    let drawCallId = 0;
 
     window.alt1 = {
         overlay: {},
@@ -205,24 +206,19 @@
         },
 
         overLayRect(color, x, y, w, h, time, lineWidth) {
-            return syncRpc({func: 'overLayRect', color: color, x: x, y: y, w: w, h: h, timeout: time, line_width: lineWidth});
+            channel.then(function(chan){
+                chan.objects.alt1.overlayRect(drawCallId++, color, x, y, w, h, time, lineWidth);
+            });
+            return true;
         },
         overLayText(str, color, size, x, y, time) {
             return alt1.overLayTextEx(str, color, size, x, y, time, '', false, true);
         },
         overLayTextEx(str, color, size, x, y, time, fontname, centered, shadow) {
-            return syncRpc({
-                func: 'overLayTextEx',
-                message: str,
-                color: color,
-                size: size,
-                x: x,
-                y: y,
-                timeout: time,
-                font_name: fontname,
-                centered: centered,
-                shadow: shadow
+            channel.then(function(chan){
+                chan.objects.alt1.overlayTextEx(drawCallId++, str, color, size, x, y, time, fontname, centered, shadow);
             });
+            return true;
         },
         overLayLine(color, width, x1, y1, x2, y2, time) {
             console.trace('overLayLine');
@@ -233,10 +229,16 @@
             return false;
         },
         overLayClearGroup(group) {
-            return syncRpc({func: 'overLayClearGroup', name: group});
+            channel.then(function(chan){
+                chan.objects.alt1.overlayClearGroup(drawCallId++, group);
+            });
+            return true;
         },
         overLaySetGroup(group) {
-            return syncRpc({func: 'overLaySetGroup', name: group});
+            channel.then(function(chan){
+                chan.objects.alt1.overlaySetGroup(drawCallId++, group);
+            });
+            return true;
         },
         overLayFreezeGroup(group) {
             console.trace('overLayFreezeGroup');
@@ -247,10 +249,11 @@
         overLayRefreshGroup(group) {
             console.trace('overLayRefreshGroup');
         },
-        overLaySetGroupZIndex(groupname, zIndex) {
-            asyncOverlayCall(function(chan){
-                chan.objects.alt1.overlaySetGroupZIndex(groupname, zIndex);
+        overLaySetGroupZIndex(group, zIndex) {
+            channel.then(function(chan){
+                chan.objects.alt1.overlaySetGroupZIndex(drawCallId++, group, zIndex);
             });
+            return true;
         },
 
         getRegion(x, y, w, h) {

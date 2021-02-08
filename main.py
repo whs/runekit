@@ -10,6 +10,7 @@ from PySide2.QtWidgets import (
     QDialog,
 )
 
+import runekit._resources
 from runekit import browser
 from runekit.game import get_platform_manager
 from runekit.host import Host

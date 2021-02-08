@@ -1,5 +1,4 @@
 import secrets
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from PySide2.QtCore import QFile, QIODevice
@@ -7,17 +6,9 @@ from PySide2.QtWebEngineWidgets import QWebEngineProfile, QWebEngineScript
 
 from runekit.browser.api import RuneKitSchemeHandler
 from runekit.browser.scheme import RuneKitScheme
-from runekit.utils import BASE
 
 if TYPE_CHECKING:
     from runekit.app import App
-
-script_file = BASE / "browser" / "alt1.js"
-
-with script_file.open() as fp:
-    src = fp.read()
-
-_added_qwebchannel = False
 
 
 class WebProfile(QWebEngineProfile):
@@ -43,18 +34,19 @@ class WebProfile(QWebEngineProfile):
         )
 
     def _insert_alt1_api(self):
-        global _added_qwebchannel, src
+        qwc_file = QFile(":/qtwebchannel/qwebchannel.js", parent=self)
+        if not qwc_file.open(QIODevice.ReadOnly):
+            raise IOError
+        src = bytes(qwc_file.readAll()).decode("utf8")
+        qwc_file.close()
 
-        if not _added_qwebchannel:
-            qwc_file = QFile(":/qtwebchannel/qwebchannel.js", parent=self)
-            if not qwc_file.open(QIODevice.ReadOnly):
-                raise IOError
-            qwc_src = bytes(qwc_file.readAll()).decode("utf8")
-            qwc_file.close()
+        src += "\n;;\n"
 
-            src = qwc_src + "\n;;\n" + src
-
-            _added_qwebchannel = True
+        alt1_file = QFile(":/runekit/browser/alt1.js", parent=self)
+        if not alt1_file.open(QIODevice.ReadOnly):
+            raise IOError
+        src += bytes(alt1_file.readAll()).decode("utf8")
+        alt1_file.close()
 
         script = QWebEngineScript()
         script.setName("alt1.js")

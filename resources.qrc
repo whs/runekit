@@ -1,0 +1,22 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+    <qresource>
+        <file>runekit/browser/alt1.js</file>
+        <file>runekit/ui/trayicon.png</file>
+        <file>runekit/ui/skins/default/borderDrag.png</file>
+        <file>runekit/ui/skins/default/exit.png</file>
+        <file>runekit/ui/skins/default/exitHover.png</file>
+        <file>runekit/ui/skins/default/settings.png</file>
+        <file>runekit/ui/skins/default/settingsHover.png</file>
+        <file>runekit/ui/skins/default/minimize.png</file>
+        <file>runekit/ui/skins/default/minimizeHover.png</file>
+        <file>runekit/ui/skins/default/borderTL.png</file>
+        <file>runekit/ui/skins/default/borderT.png</file>
+        <file>runekit/ui/skins/default/borderTR.png</file>
+        <file>runekit/ui/skins/default/borderL.png</file>
+        <file>runekit/ui/skins/default/borderR.png</file>
+        <file>runekit/ui/skins/default/borderBL.png</file>
+        <file>runekit/ui/skins/default/borderB.png</file>
+        <file>runekit/ui/skins/default/borderBR.png</file>
+    </qresource>
+</RCC>

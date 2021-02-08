@@ -9,9 +9,7 @@ from PySide2.QtWidgets import (
     QPushButton,
 )
 
-from runekit.utils import BASE
-
-SKIN = BASE / "ui" / "skins" / "default"
+SKIN = ":/runekit/ui/skins/default/"
 
 
 class WindowFrame(QWidget):
@@ -98,7 +96,7 @@ class _FrameInner(QWidget):
         bot_row.addWidget(self.build_image("borderBR", Qt.BottomEdge | Qt.RightEdge))
 
     def build_image(self, name: str, edge=None, h_fix=True, v_fix=True):
-        pixmap = QPixmap(str(SKIN / name))
+        pixmap = QPixmap(SKIN + name)
         label = _ResizeHandle(edge, parent=self)
         label.setSizePolicy(
             QSizePolicy.Fixed if h_fix else QSizePolicy.Preferred,
@@ -155,7 +153,7 @@ class _WindowButtons(QWidget):
     def button_style(self, normal, hover):
         return f"""
         QPushButton {{
-            image: url({SKIN / normal});
+            image: url({SKIN}{normal});
             border: none;
             padding: 0;
             margin: 0;
@@ -163,7 +161,7 @@ class _WindowButtons(QWidget):
             height: 12px;
         }}
         QPushButton::hover {{
-            image: url({SKIN / hover});
+            image: url({SKIN}{hover});
         }}
         """
 
@@ -172,7 +170,7 @@ class _DragHandle(QLabel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        self.setPixmap(QPixmap(str(SKIN / "borderDrag.png")))
+        self.setPixmap(QPixmap(SKIN + "borderDrag.png"))
         self.setCursor(Qt.OpenHandCursor)
 
     def mousePressEvent(self, ev):

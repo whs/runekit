@@ -60,8 +60,7 @@ poetry install
 # If previous fails and you're on Big Sur, try this instead
 SYSTEM_VERSION_COMPAT=1 poetry install
 
-poetry build
-cp build/lib.*/runekit/image/*.cpython*.* runekit/image/
+poetry run make dev
 
 # If you just want to load AFKWarden
 poetry run python main.py https://runeapps.org/apps/alt1/afkscape/appconfig.json
@@ -74,8 +73,6 @@ poetry run python main.py
 Requires libxcb to be installed
 
 ### macOS additional instruction
-
-~~You'll probably need Command Line Tools to build the C code, run: `xcode-select --install` to get it~~ Currently the native code isn't really used (will be used for OCR features)
 
 You will need to add Python in System Preferences > Security > Privacy in these sections:
 

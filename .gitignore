@@ -6,3 +6,4 @@ setup.py
 *.egg-info
 __pycache__
 runekit/_resources.py
+RuneKitApp.spec

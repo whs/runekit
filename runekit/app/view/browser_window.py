@@ -1,7 +1,8 @@
+import logging
 from typing import TYPE_CHECKING
 
-from PySide2.QtCore import Qt, Slot, QRect, QObject, Signal, QEvent
-from PySide2.QtGui import QIcon, QCloseEvent
+from PySide2.QtCore import Qt, Slot, QRect, QObject, QUrl
+from PySide2.QtGui import QIcon, QDesktopServices
 from PySide2.QtWebEngineWidgets import QWebEngineView, QWebEnginePage
 from PySide2.QtWidgets import QMainWindow
 
@@ -12,9 +13,52 @@ if TYPE_CHECKING:
     from runekit.app.app import App
 
 
+class PageClass(QWebEnginePage):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.logger = logging.getLogger(__name__ + "." + self.__class__.__name__)
+
+    def javaScriptConsoleMessage(
+        self,
+        level: QWebEnginePage.JavaScriptConsoleMessageLevel,
+        message: str,
+        line_no: int,
+        src_id: str,
+    ):
+        logger = self.logger.getChild(self.url().toString())
+        log = logger.debug
+        if level == QWebEnginePage.InfoMessageLevel:
+            log = logger.debug
+        elif level == QWebEnginePage.WarningMessageLevel:
+            log = logger.warning
+        elif level == QWebEnginePage.ErrorMessageLevel:
+            log = logger.error
+        log("%s", message)
+
+    def acceptNavigationRequest(
+        self, url: QUrl, type_: QWebEnginePage.NavigationType, is_main_frame: bool
+    ) -> bool:
+        if not is_main_frame:
+            return super().acceptNavigationRequest(url, type_, is_main_frame)
+
+        if (
+            type_ != QWebEnginePage.NavigationTypeTyped
+            and url.authority() != self.url().authority()
+        ):
+            # The web is only allowed pages on the same origin
+            # Cross origin pages would open in browser
+            if url.scheme() in ("http", "https"):
+                QDesktopServices.openUrl(url)
+
+            return False
+
+        return super().acceptNavigationRequest(url, type_, is_main_frame)
+
+
 class BrowserWindow(QMainWindow):
     app: "App"
     browser: QWebEngineView
+    page_class = PageClass
     framed = False
 
     def __init__(self, app: "App", **kwargs):
@@ -38,12 +82,15 @@ class BrowserWindow(QMainWindow):
         else:
             self.setCentralWidget(self.browser)
 
-        page = QWebEnginePage(self.app.get_web_profile(), self.browser)
+        self.browser.setPage(self.get_page())
+
+    def get_page(self):
+        page = self.page_class(self.app.get_web_profile(), self.browser)
         page.setWebChannel(Alt1WebChannel(app=self.app, parent=self.browser))
         page.geometryChangeRequested.connect(self.on_geometry_change)
         page.iconChanged.connect(self.on_icon_changed)
         page.windowCloseRequested.connect(self.on_window_close)
-        self.browser.setPage(page)
+        return page
 
     @Slot(QRect)
     def on_geometry_change(self, size: QRect):
@@ -65,7 +112,15 @@ class BrowserView(QWebEngineView):
         app_window = self.browser_window()
         popup = PopupWindow(app=app_window.app, parent=app_window)
         popup.setWindowIcon(app_window.windowIcon())
-        popup.show()
+
+        def show(ok: bool):
+            popup.browser.loadFinished.disconnect(show)
+            if ok:
+                popup.show()
+            else:
+                popup.close()
+
+        popup.browser.loadFinished.connect(show)
         return popup.browser
 
     def browser_window(self) -> BrowserWindow:

@@ -179,8 +179,9 @@
             });
         },
 
-        // openBrowser(url) {
-        // },
+        openBrowser(url) {
+            window.open(url, '_blank');
+        },
 
         // clearBinds() {
         // },
@@ -195,7 +196,7 @@
         // },
 
         closeApp() {
-            window.close()
+            window.close();
         },
 
         setTooltip(tooltip) {

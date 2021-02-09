@@ -14,6 +14,7 @@ from PySide2.QtWidgets import (
     QTableWidget,
     QHBoxLayout,
     QTreeView,
+    QSpinBox,
 )
 
 from .applications import ApplicationModel
@@ -86,6 +87,19 @@ class InterfacePage(QWidget):
         border_field.setDisabled(sys.platform == "darwin")
         border_field.setChecked(sys.platform != "darwin")
         layout.addRow(None, border_field)
+
+        # I think this doesn't belong to "Interface"
+        # either rename it to settings or make separate game tab
+        refresh_label = QLabel("Refresh interval", self)
+        refresh_layout = QHBoxLayout(self)
+        refresh_field = QSpinBox(self)
+        refresh_field.setRange(100, 2000)
+        refresh_field.setSingleStep(100)
+        refresh_field.setValue(100)
+        refresh_layout.addWidget(refresh_field, 1)
+        refresh_unit = QLabel("ms", self)
+        refresh_layout.addWidget(refresh_unit, 0)
+        layout.addRow(refresh_label, refresh_layout)
 
     @Slot(int)
     def preview_tooltip(self, index: int):

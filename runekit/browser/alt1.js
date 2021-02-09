@@ -222,7 +222,7 @@
         },
 
         setTitleBarText(text) {
-            document.title = text;
+            
         },
 
         overLayRect(color, x, y, w, h, time, lineWidth) {

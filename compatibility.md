@@ -16,20 +16,20 @@
 - [x] alt1.rsActive
 - [x] alt1.userResize
 - [ ] alt1.identiyAppUrl
-- [ ] alt1.openBrowser
-- [ ] alt1.clearBinds
+- [x] alt1.openBrowser
+- [x] alt1.clearBinds
 - [ ] alt1.registerStatusDaemon
 - [ ] alt1.getStatusDaemonState
-- [ ] alt1.showNotification
-- [ ] alt1.closeApp
+- [x] alt1.showNotification
+- [x] alt1.closeApp
 - [x] alt1.setTooltip
 - [x] alt1.clearTooltip
 - [x] alt1.setTaskbarProgress
-- [ ] alt1.setTitleBarText - Implemented but not validated
+- [ ] alt1.setTitleBarText
 - [x] alt1.overLayRect
 - [x] alt1.overLayText
 - [x] alt1.overLayTextEx
-- [ ] alt1.overLayLine
+- [x] alt1.overLayLine
 - [ ] alt1.overLayImage
 - [x] alt1.overLayClearGroup
 - [x] alt1.overLaySetGroup

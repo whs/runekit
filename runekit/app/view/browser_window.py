@@ -84,12 +84,13 @@ class BrowserWindow(QMainWindow):
 
         self.browser.setPage(self.get_page())
 
-    def get_page(self):
+    def get_page(self) -> QWebEnginePage:
         page = self.page_class(self.app.get_web_profile(), self.browser)
         page.setWebChannel(Alt1WebChannel(app=self.app, parent=self.browser))
         page.geometryChangeRequested.connect(self.on_geometry_change)
         page.iconChanged.connect(self.on_icon_changed)
         page.windowCloseRequested.connect(self.on_window_close)
+        page.featurePermissionRequested.connect(self.on_permission_request)
         return page
 
     @Slot(QRect)
@@ -103,6 +104,27 @@ class BrowserWindow(QMainWindow):
     @Slot()
     def on_window_close(self):
         self.close()
+
+    @Slot(QUrl, QWebEnginePage.Feature)
+    def on_permission_request(self, origin: QUrl, feature: QWebEnginePage.Feature):
+        if feature == QWebEnginePage.Notifications and self.app.has_permission(
+            "overlay"
+        ):
+            # FIXME: This doesn't really work - PySide2 doesn't have QWebEngineNotification
+            self.browser.page().setFeaturePermission(
+                origin, feature, QWebEnginePage.PermissionGrantedByUser
+            )
+        elif (
+            feature in (QWebEnginePage.DesktopVideoCapture, QWebEnginePage.DesktopAudioVideoCapture)
+            and self.app.has_permission('pixel')
+        ):
+            self.browser.page().setFeaturePermission(
+                origin, feature, QWebEnginePage.PermissionGrantedByUser
+            )
+        else:
+            self.browser.page().setFeaturePermission(
+                origin, feature, QWebEnginePage.PermissionDeniedByUser
+            )
 
 
 class BrowserView(QWebEngineView):

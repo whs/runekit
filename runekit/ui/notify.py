@@ -1,10 +1,10 @@
 import abc
 from typing import Union
 
-from PySide2.QtGui import QIcon
 from PySide2.QtWidgets import QSystemTrayIcon
 
 from .tooltip import TooltipManager
+from .tray import tray_icon
 
 
 class Notifier(abc.ABC):
@@ -22,13 +22,9 @@ class TooltipNotifier(Notifier):
 
 
 class TrayIconNotifier(Notifier):
-    def __init__(self):
-        self.icon = QSystemTrayIcon(QIcon(":/runekit/ui/trayicon.png"))
-        self.icon.show()
-
     def notify(self, text):
         if text:
-            self.icon.showMessage("RuneKit", text)
+            tray_icon().showMessage("RuneKit", text)
 
 
 class AutoNotifier(Notifier):

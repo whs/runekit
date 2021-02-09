@@ -27,6 +27,7 @@ from runekit.browser.utils import (
     image_to_stream,
     encode_mouse,
 )
+from runekit.ui.tray import tray_icon
 
 if TYPE_CHECKING:
     from runekit.app.app import App
@@ -222,6 +223,13 @@ class Alt1Api(QObject):
             raise ApiPermissionDeniedException("overlay")
 
         self.app.host.notifier.notify(str(text))
+
+    @Slot(str, str, str)
+    def showNotification(self, title, message, icon):
+        if not self.app.has_permission("overlay"):
+            raise ApiPermissionDeniedException("overlay")
+
+        tray_icon().showMessage(title, message)
 
     @Slot(str)
     def identifyAppUrl(self, url):

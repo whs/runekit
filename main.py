@@ -8,12 +8,14 @@ from PySide2.QtWidgets import (
     QMessageBox,
     QInputDialog,
     QDialog,
+    QSystemTrayIcon,
 )
 
 import runekit._resources
 from runekit import browser
 from runekit.game import get_platform_manager
 from runekit.host import Host
+from runekit.ui.tray import TrayIcon
 
 
 @click.command(
@@ -33,6 +35,9 @@ def main(app_url, game_index, qt_args):
     app.setQuitOnLastWindowClosed(False)
     game_manager = None
     try:
+        if QSystemTrayIcon.isSystemTrayAvailable():
+            TrayIcon().show()
+
         host = Host()
 
         if app_url == "settings":

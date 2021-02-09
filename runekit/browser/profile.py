@@ -20,7 +20,6 @@ class WebProfile(QWebEngineProfile):
     app: "App"
 
     def __init__(self, app=None, parent=None):
-        # TODO: Persist
         super().__init__("app", parent=parent)
         self.app = app
         self.rpc_secret = secrets.token_urlsafe(64)

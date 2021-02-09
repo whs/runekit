@@ -183,8 +183,9 @@
             window.open(url, '_blank');
         },
 
-        // clearBinds() {
-        // },
+        clearBinds() {
+            window.alt1.clearTooltip();
+        },
 
         // registerStatusDaemon(serverUrl, state) {
         // },
@@ -192,8 +193,12 @@
         //     return '';
         // },
 
-        // showNotification() {
-        // },
+        showNotification(title, message, icon) {
+            // FIXME: Just use HTML5 Notification once QWebEngineNotification is implemented
+            channel.then(function(chan){
+                chan.objects.alt1.showNotification(title, message, icon);
+            });
+        },
 
         closeApp() {
             window.close();

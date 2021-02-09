@@ -2,7 +2,11 @@ import secrets
 from typing import TYPE_CHECKING
 
 from PySide2.QtCore import QFile, QIODevice
-from PySide2.QtWebEngineWidgets import QWebEngineProfile, QWebEngineScript
+from PySide2.QtWebEngineWidgets import (
+    QWebEngineProfile,
+    QWebEngineScript,
+    QWebEngineSettings,
+)
 
 from runekit.browser.api import RuneKitSchemeHandler
 from runekit.browser.scheme import RuneKitScheme
@@ -22,6 +26,12 @@ class WebProfile(QWebEngineProfile):
         self.rpc_secret = secrets.token_urlsafe(64)
         self._insert_scheme_handlers()
         self._insert_alt1_api()
+        self.settings().setAttribute(
+            QWebEngineSettings.PlaybackRequiresUserGesture, False
+        )
+        self.settings().setAttribute(QWebEngineSettings.PdfViewerEnabled, False)
+        self.settings().setAttribute(QWebEngineSettings.ScreenCaptureEnabled, False)
+        self.settings().setAttribute(QWebEngineSettings.AutoLoadIconsForPage, False)
 
     def _insert_scheme_handlers(self):
         self.installUrlSchemeHandler(

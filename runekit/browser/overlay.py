@@ -4,7 +4,7 @@ import logging
 from typing import List, Dict, Tuple, Optional, TYPE_CHECKING
 
 from PySide2.QtCore import QObject, QTimer, Qt
-from PySide2.QtGui import QFont, QPen
+from PySide2.QtGui import QFont, QPen, QImage, QPixmap
 from PySide2.QtWidgets import (
     QGraphicsItem,
     QGraphicsDropShadowEffect,
@@ -12,6 +12,7 @@ from PySide2.QtWidgets import (
     QGraphicsRectItem,
     QGraphicsItemGroup,
     QGraphicsLineItem,
+    QGraphicsPixmapItem,
 )
 
 from .utils import decode_color
@@ -240,6 +241,17 @@ class OverlayApi(QObject):
             gfx.setPos(x - (bound.width() / 2), y - (bound.height() / 2))
         else:
             gfx.setPos(x, y)
+
+        self._finalize_gfx(gfx, timeout)
+
+    @ensure_overlay
+    def overlay_image(self, img: bytes, x: int, y: int, width: int, timeout: int):
+        height = len(img) / width / 4
+
+        img = QImage(img, width, height, QImage.Format_ARGB32)
+
+        gfx = QGraphicsPixmapItem(QPixmap.fromImage(img))
+        gfx.setPos(x, y)
 
         self._finalize_gfx(gfx, timeout)
 

@@ -222,7 +222,7 @@
         },
 
         setTitleBarText(text) {
-            
+
         },
 
         overLayRect(color, x, y, w, h, time, lineWidth) {
@@ -247,8 +247,10 @@
             return true;
         },
         overLayImage(x, y, imgstr, imgwidth, time) {
-            console.trace('overLayImage');
-            return false;
+            channel.then(function(chan){
+                chan.objects.alt1.overlayImage(drawCallId++, x, y, imgstr, imgwidth, time);
+            });
+            return true;
         },
         overLayClearGroup(group) {
             channel.then(function(chan){

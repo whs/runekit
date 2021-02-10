@@ -30,7 +30,7 @@
 - [x] alt1.overLayText
 - [x] alt1.overLayTextEx
 - [x] alt1.overLayLine
-- [ ] alt1.overLayImage
+- [x] alt1.overLayImage
 - [x] alt1.overLayClearGroup
 - [x] alt1.overLaySetGroup
 - [x] alt1.overLayFreezeGroup

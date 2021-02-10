@@ -35,13 +35,14 @@ Alt1-compatible toolbox for RuneScape 3, for Linux and macOS.
 | **DgKey**                                                                       | &nbsp; | &nbsp; |
 | - Show map                                                                      | ✅     | ?      |
 | - Track key                                                                     | ✅     | ?      |
-| - Select player location                                                        | ❌     | ?      |
+| - Select player location                                                        | 3      | ?      |
 | **[ArchMatCounter](https://zerogwafa.github.io/ArchMatCounter/appconfig.json)** | ?      | ?      |
 | **Bank price checker**                                                          | ✅     | ?      |
 | **Meg answers**                                                                 | 2      | ?      |
 
 - 1: Only keyboard activity count as active
 - 2: Works but the alt+1 keybind count as selecting option 1
+- 3: Works but you have to alt+tab to game window
 
 ## Installation setup
 

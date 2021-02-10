@@ -1,3 +1,4 @@
+import base64
 import json
 import logging
 import secrets
@@ -270,6 +271,16 @@ class Alt1Api(QObject):
 
         self._overlay.enqueue(
             call_id, "overlay_line", color, width, x1, y1, x2, y2, timeout
+        )
+
+    @Slot(int, int, int, str, int, int)
+    def overlayImage(self, call_id, x, y, img_str, img_width, timeout):
+        if not self.app.has_permission("overlay"):
+            raise ApiPermissionDeniedException("overlay")
+
+        img_bytes = base64.b64decode(img_str)
+        self._overlay.enqueue(
+            call_id, "overlay_image", img_bytes, x, y, img_width, timeout
         )
 
     @Slot(int, str, int, int, int, int, int, str, bool, bool)

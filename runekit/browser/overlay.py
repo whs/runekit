@@ -1,5 +1,6 @@
 import collections
 import functools
+import hashlib
 import logging
 from typing import List, Dict, Tuple, Optional, TYPE_CHECKING
 
@@ -246,9 +247,7 @@ class OverlayApi(QObject):
 
     @ensure_overlay
     def overlay_image(self, img: bytes, x: int, y: int, width: int, timeout: int):
-        height = len(img) / width / 4
-
-        img = QImage(img, width, height, QImage.Format_ARGB32)
+        img = self.get_qimage(img, width)
 
         gfx = QGraphicsPixmapItem(QPixmap.fromImage(img))
         gfx.setPos(x, y)
@@ -259,3 +258,8 @@ class OverlayApi(QObject):
     def overlay_set_group_z(self, name: str, z_index: int):
         for item in self.groups.get(name, []):
             item.setZValue(z_index)
+
+    @functools.lru_cache(100)
+    def get_qimage(self, img: bytes, width: int):
+        height = len(img) / width / 4
+        return QImage(img, width, height, QImage.Format_ARGB32)

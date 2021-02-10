@@ -38,8 +38,10 @@ Alt1-compatible toolbox for RuneScape 3, for Linux and macOS.
 | - Select player location                                                        | ❌     | ?      |
 | **[ArchMatCounter](https://zerogwafa.github.io/ArchMatCounter/appconfig.json)** | ?      | ?      |
 | **Bank price checker**                                                          | ✅     | ?      |
+| **Meg answers**                                                                 | 2      | ?      |
 
 - 1: Only keyboard activity count as active
+- 2: Works but the alt+1 keybind count as selecting option 1
 
 ## Installation setup
 

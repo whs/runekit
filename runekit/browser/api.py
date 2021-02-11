@@ -470,14 +470,7 @@ class RuneKitSchemeHandler(QWebEngineUrlSchemeHandler):
 
         processor = RuneKitRequestProcess(self, req, parent=req)
         processor.signals.successSignal.connect(self.on_success)
-        if "overLay" in req.requestUrl().path():
-            # FIXME: RuneKitRequestProcess should be able to notify main thread that
-            # this should run in main thread
-
-            # Overlay functions require main thread
-            processor.run()
-        else:
-            self.thread_pool.start(processor)
+        self.thread_pool.start(processor)
 
     @Slot(QWebEngineUrlRequestJob, bytes, bytes)
     def on_success(self, request, content_type, reply):

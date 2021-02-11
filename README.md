@@ -4,52 +4,8 @@
 
 Alt1-compatible toolbox for RuneScape 3, for Linux and macOS.
 
-## What works
-
-| App                                                                             | Linux  | macOS  |
-| ------------------------------------------------------------------------------- | ------ | ------ |
-| **Clue Solver**                                                                 | &nbsp; | &nbsp; |
-| - Text/Emote                                                                    | ✅     | ✅     |
-| - Map scroll                                                                    | ✅     | ?      |
-| - Compass                                                                       | ✅     | ?      |
-| - Scan                                                                          | ✅     | ?      |
-| - Celtic knot                                                                   | ✅     | ✅     |
-| - Slide                                                                         | ✅     | ✅     |
-| - Lockbox                                                                       | ✅     | ?      |
-| - Towers                                                                        | ?      | ?      |
-| Example app                                                                     | ✅     | ✅     |
-| **AfkWarden**                                                                   | &nbsp; | &nbsp; |
-| - Inactive                                                                      | 1      | ✅     |
-| - XP Counter                                                                    | ❌     | ❌     |
-| - Chatbox                                                                       | ✅     | ✅     |
-| - Crafting menu                                                                 | ✅     | ✅     |
-| - Buffs                                                                         | ✅     | ✅     |
-| - Action bar stats                                                              | ✅     | ✅     |
-| - Dialog box                                                                    | ✅     | ✅     |
-| - Target death                                                                  | ?      | ?      |
-| - Sheathe stance                                                                | ?      | ?      |
-| - Castle Wars                                                                   | ?      | ?      |
-| - Fight kiln waves                                                              | ?      | ?      |
-| - Target death                                                                  | ?      | ?      |
-| - Item drops                                                                    | ?      | ?      |
-| **DgKey**                                                                       | &nbsp; | &nbsp; |
-| - Show map                                                                      | ✅     | ?      |
-| - Track key                                                                     | ✅     | ?      |
-| - Select player location                                                        | 3      | ?      |
-| **[ArchMatCounter](https://zerogwafa.github.io/ArchMatCounter/appconfig.json)** | ?      | ?      |
-| **Bank price checker**                                                          | ✅     | ?      |
-| **Meg answers**                                                                 | 2      | ?      |
-
-- 1: Only keyboard activity count as active
-- 2: Works but the alt+1 keybind count as selecting option 1
-- 3: Works but you have to alt+tab to game window
-
-## Installation setup
-
-These instructions are for those who have little/no programming experience and prepare your environment to run the instructions in the following section `Running`.
-
-- [macOS](./docs/macos-setup.md)
-  - [video guide](https://youtu.be/X03SyyV9Bro) from PupRS
+* [Compatibility](https://github.com/whs/runekit/wiki/App-Compatibility)
+* [macOS installation guide](docs/macos-setup.md)
 
 ## Running
 
@@ -88,31 +44,6 @@ Note that Python might appear as the closest macOS application (eg. your termina
 
 Start with `--remote-debugging-port=9222` to enable remote debugger protocol.
 To debug, go to `chrome://inspect` on Chrome/Chromium.
-
-## Technical Features
-
-- [Alt1 Compatibility](compatibility.md)
-
-| Platform Feature        | Linux  | macOS  |
-| ----------------------- | ------ | ------ |
-| **Game Manager**        | &nbsp; | &nbsp; |
-| Instance change signals | ❌     | ❌     |
-| **Instance**            | &nbsp; | &nbsp; |
-| alt1_pressed            | 1      | ✅     |
-| game_activity           | 2      | ✅     |
-| positionChanged         | ✅     | ✅     |
-| scalingChanged          | ❌     | ❌     |
-| focusChanged            | ✅     | ✅     |
-| set_taskbar_progress    | ❌     | ❌     |
-| Window capture          | ✅     | ✅     |
-
-- 1: Works, but the game also receive the key
-- 2: Only detect keyboard activity
-
-## Known issues
-
-- On macOS some values include the size of window decorator, including the screenshot
-  - This can be tested with AfkScape color picker
 
 ## License
 

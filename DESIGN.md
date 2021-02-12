@@ -14,6 +14,22 @@ The `game` package is the only one allowed to use platform-dependent code. All o
 - game: Interact with the game window. Since accessing other application's window is not abstracted by Qt, this package is the only one allowed to be platform dependent 
 - image: Image processing tools
 
+### Image format
+The library has two internal image formats:
+
+- numpy.ndarray of shape (height, width, 4)
+  - Current standard
+  - Store pixels in BGRA32 format (ARGB 8 bit per channel in little endian)
+  - Should be faster as no channel swapping is needed
+  - Requires copying when accessing raw buffer
+  - Support OpenCV operation
+- PIL Image
+  - Deprecated
+  - Store pixels in RGBA32 format
+  - Slower as when communicating with Alt1 we need to swap to BGRA
+  - Can access raw buffer without copying
+  - Easier to work with for basic operations
+
 ## App
 
 Packages related to Alt1 app.

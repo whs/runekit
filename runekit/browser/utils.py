@@ -1,7 +1,11 @@
 import base64
+from typing import Union
 
+import numpy as np
 from PIL import Image
 from PySide2.QtGui import QColor
+
+from runekit.image.np_utils import np_crop
 
 TRANSFER_LIMIT = 4_000_000
 
@@ -16,24 +20,29 @@ class ApiPermissionDeniedException(Exception):
         self.required_permission = required_permission
 
 
-def image_to_stream(image: Image, x=0, y=0, width=None, height=None) -> bytes:
-    assert image.mode == "RGB" or image.mode == "RGBA"
+def image_to_stream(
+    image: Union[Image.Image, np.ndarray], x=0, y=0, width=None, height=None
+) -> bytes:
+    if isinstance(image, np.ndarray):
+        return base64.b64encode(np_crop(image, x, y, width, height).tobytes())
+    else:
+        assert image.mode == "RGB" or image.mode == "RGBA"
 
-    if width is None:
-        width = image.width
-    if height is None:
-        height = image.height
+        if width is None:
+            width = image.width
+        if height is None:
+            height = image.height
 
-    if width * height * 4 > TRANSFER_LIMIT:
-        return ""
+        if width * height * 4 > TRANSFER_LIMIT:
+            return ""
 
-    if image.mode == "RGB":
-        image = image.convert("RGBA")
+        if image.mode == "RGB":
+            image = image.convert("RGBA")
 
-    r, g, b, a = image.crop((x, y, x + width, y + height)).split()
-    image = Image.merge("RGBA", (b, g, r, a))
+        r, g, b, a = image.crop((x, y, x + width, y + height)).split()
+        image = Image.merge("RGBA", (b, g, r, a))
 
-    return base64.b64encode(image.tobytes())
+        return base64.b64encode(image.tobytes())
 
 
 def encode_mouse(x: int, y: int) -> int:
@@ -46,3 +55,10 @@ def decode_color(color: int) -> QColor:
     b = (color >> 0) & 0xFF
     a = (color >> 24) & 0xFF
     return QColor.fromRgb(r, g, b, a)
+
+
+def decode_image(img: str, width: int) -> np.ndarray:
+    img = base64.b64decode(img)
+    img = np.frombuffer(img, "<B")
+    img.shape = (-1, width, 4)
+    return img

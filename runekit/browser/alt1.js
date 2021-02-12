@@ -321,7 +321,7 @@
         //     return -1;
         // },
         // bindFindSubImg(id, imgstr, imgwidth, x, y, w, h) {
-        //     return '';
+        //     return syncRpc({func: 'bindFindSubImg', id: id, subimg: imgstr, img_width: imgwidth, x: x, y: y, w: w, h: h});
         // },
         addOCRFont(){
         },

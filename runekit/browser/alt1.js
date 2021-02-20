@@ -40,9 +40,19 @@
         }
     });
 
+    function str2ab(str) {
+        let buf = new ArrayBuffer(str.length);
+        let bufView = new Uint8ClampedArray(buf);
+        for (let i=0, strLen=str.length; i < strLen; i++) {
+            bufView[i] = str.charCodeAt(i) & 0xFF;
+        }
+        return bufView;
+    }
+
     function syncRpc(msg, json) {
         let xhr = new XMLHttpRequest();
         xhr.open('GET', 'rk:' + JSON.stringify(msg), false); // sync xhr
+        xhr.overrideMimeType('text/plain; charset=x-user-defined');
         xhr.setRequestHeader('token', RPC_TOKEN);
         xhr.send(null);
 
@@ -344,12 +354,11 @@
         // },
         capture(x, y, w, h) {
             let data = syncRpc({func: 'getRegionRaw', x: x, y: y, w: w, h: h});
-            let encoder = new TextEncoder();
-            return encoder.encode(data);
+            return str2ab(data);
         },
         captureAsync(x, y, w, h) {
             return asyncRpc({func: 'getRegionRaw', x: x, y: y, w: w, h: h}, 'arraybuffer')
-                .then((data) => new Uint8Array(data));
+                .then((data) => new Uint8ClampedArray(data));
         },
         // async captureMultiAsync(areas) {
         // },

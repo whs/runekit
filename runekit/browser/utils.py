@@ -1,10 +1,11 @@
 import base64 as b64
-from typing import Union
+from typing import TypeVar
 
 import numpy as np
 from PIL import Image
 from PySide2.QtGui import QColor
 
+from runekit.game.instance import ImageType
 from runekit.image.np_utils import np_crop
 
 TRANSFER_LIMIT = 4_000_000
@@ -20,18 +21,57 @@ class ApiPermissionDeniedException(Exception):
         self.required_permission = required_permission
 
 
+ImgTypeG = TypeVar("T", np.ndarray, Image.Image)
+
+
+def ensure_image_rgba(image: ImgTypeG) -> ImgTypeG:
+    # XXX: This function is not idempotent!
+    if isinstance(image, np.ndarray):
+        return image[:, :, [2, 1, 0, 3]]
+    else:
+        if image.mode == "RGB":
+            image = image.convert("RGBA")
+
+        return image
+
+
+def ensure_image_bgra(image: ImgTypeG) -> ImgTypeG:
+    # XXX: This function is not idempotent!
+    if isinstance(image, np.ndarray):
+        return image
+    else:
+        if image.mode == "RGB":
+            image = image.convert("RGBA")
+
+        r, g, b, a = image.split()
+        image = Image.merge("RGBA", (b, g, r, a))
+
+        return image
+
+
+def ensure_image(image: ImgTypeG, mode: str) -> ImgTypeG:
+    if mode == "rgba":
+        return ensure_image_rgba(image)
+    elif mode == "bgra":
+        return ensure_image_bgra(image)
+    else:
+        raise ValueError("invalid mode")
+
+
 def image_to_stream(
-    image: Union[Image.Image, np.ndarray],
+    image: ImageType,
     x=0,
     y=0,
     width=None,
     height=None,
+    mode="bgra",
     base64=True,
 ) -> bytes:
     if isinstance(image, np.ndarray):
-        out = np_crop(image, x, y, width, height).tobytes()
+        out = np_crop(image, x, y, width, height)
+        out = ensure_image(out, mode).tobytes()
     else:
-        assert image.mode == "RGB" or image.mode == "RGBA"
+        assert image.mode == "RGBA"
 
         if width is None:
             width = image.width
@@ -41,13 +81,9 @@ def image_to_stream(
         if width * height * 4 > TRANSFER_LIMIT:
             return ""
 
-        if image.mode == "RGB":
-            image = image.convert("RGBA")
+        image = image.crop((x, y, x + width, y + height))
 
-        r, g, b, a = image.crop((x, y, x + width, y + height)).split()
-        image = Image.merge("RGBA", (b, g, r, a))
-
-        out = image.tobytes()
+        out = ensure_image(image, mode).tobytes()
 
     if base64:
         return b64.b64encode(out)

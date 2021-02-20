@@ -211,7 +211,7 @@ class Alt1Api(QObject):
             raise ApiPermissionDeniedException("pixel")
 
         return image_to_stream(
-            self.app.game_instance.grab_region(x, y, w, h), base64=False
+            self.app.game_instance.grab_region(x, y, w, h), base64=False, mode="rgba"
         )
 
     def bind_region(self, x, y, w, h):

@@ -2,7 +2,7 @@ import base64
 import json
 import logging
 import secrets
-from typing import TYPE_CHECKING, Dict, Callable, List
+from typing import TYPE_CHECKING, Dict, Callable, List, NamedTuple
 from urllib.parse import urljoin
 
 from PySide2.QtCore import (
@@ -27,11 +27,17 @@ from runekit.browser.utils import (
     ApiPermissionDeniedException,
     image_to_stream,
     encode_mouse,
+    decode_image,
 )
+from runekit.game.instance import ImageType
 from runekit.ui.tray import tray_icon
 
 if TYPE_CHECKING:
     from runekit.app.app import App
+
+
+class BoundedRegion(NamedTuple):
+    image: ImageType
 
 
 class Alt1Api(QObject):
@@ -41,7 +47,7 @@ class Alt1Api(QObject):
     alt1Signal = Signal(int)
 
     _screen_info: QRect
-    _bound_regions: List
+    _bound_regions: List[BoundedRegion]
     _game_active = False
     _game_position: QRect
     _game_scaling: float
@@ -52,6 +58,13 @@ class Alt1Api(QObject):
         self.app = app
         self._bound_regions = []
         self._overlay = OverlayApi(self, parent=self)
+        self.logger = logging.getLogger(
+            __name__
+            + "."
+            + self.__class__.__name__
+            + "."
+            + self.app.manifest["appName"]
+        )
 
         self.rpc_funcs = {
             "getRegion": self.get_region,
@@ -197,7 +210,8 @@ class Alt1Api(QObject):
             return 0
 
         # Alt1 only support one region
-        self._bound_regions = [self.app.game_instance.grab_region(x, y, w, h)]
+        bound_data = self.app.game_instance.grab_region(x, y, w, h)
+        self._bound_regions = [BoundedRegion(image=bound_data)]
         return 1
 
     def bind_get_region(self, id, x, y, w, h):
@@ -210,10 +224,10 @@ class Alt1Api(QObject):
         try:
             image = self._bound_regions[id - 1]
         except IndexError:
-            print("no img index %d" % id)
+            self.logger.warning("bindGetRegion(%d) but image not bound", id)
             return ""
 
-        return image_to_stream(image, x, y, w, h)
+        return image_to_stream(image.image, x, y, w, h)
 
     # endregion
 

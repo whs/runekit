@@ -68,6 +68,7 @@ class Alt1Api(QObject):
 
         self.rpc_funcs = {
             "getRegion": self.get_region,
+            "getRegionRaw": self.get_region_raw,
             "bindRegion": self.bind_region,
             "bindGetRegion": self.bind_get_region,
         }
@@ -204,6 +205,14 @@ class Alt1Api(QObject):
             raise ApiPermissionDeniedException("pixel")
 
         return image_to_stream(self.app.game_instance.grab_region(x, y, w, h))
+
+    def get_region_raw(self, x, y, w, h):
+        if not self.app.has_permission("pixel"):
+            raise ApiPermissionDeniedException("pixel")
+
+        return image_to_stream(
+            self.app.game_instance.grab_region(x, y, w, h), base64=False
+        )
 
     def bind_region(self, x, y, w, h):
         if not self.app.has_permission("pixel"):

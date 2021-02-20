@@ -1,4 +1,4 @@
-import base64
+import base64 as b64
 from typing import Union
 
 import numpy as np
@@ -21,10 +21,15 @@ class ApiPermissionDeniedException(Exception):
 
 
 def image_to_stream(
-    image: Union[Image.Image, np.ndarray], x=0, y=0, width=None, height=None
+    image: Union[Image.Image, np.ndarray],
+    x=0,
+    y=0,
+    width=None,
+    height=None,
+    base64=True,
 ) -> bytes:
     if isinstance(image, np.ndarray):
-        return base64.b64encode(np_crop(image, x, y, width, height).tobytes())
+        out = np_crop(image, x, y, width, height).tobytes()
     else:
         assert image.mode == "RGB" or image.mode == "RGBA"
 
@@ -42,7 +47,12 @@ def image_to_stream(
         r, g, b, a = image.crop((x, y, x + width, y + height)).split()
         image = Image.merge("RGBA", (b, g, r, a))
 
-        return base64.b64encode(image.tobytes())
+        out = image.tobytes()
+
+    if base64:
+        return b64.b64encode(out)
+
+    return out
 
 
 def encode_mouse(x: int, y: int) -> int:
@@ -58,7 +68,7 @@ def decode_color(color: int) -> QColor:
 
 
 def decode_image(img: str, width: int) -> np.ndarray:
-    img = base64.b64decode(img)
+    img = b64.b64decode(img)
     img = np.frombuffer(img, "<B")
     img.shape = (-1, width, 4)
     return img

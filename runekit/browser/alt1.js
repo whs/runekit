@@ -52,6 +52,25 @@
         return xhr.responseText;
     }
 
+    function asyncRpc(msg, responseType='') {
+        return new Promise((resolve, reject) => {
+            let xhr = new XMLHttpRequest();
+            xhr.open('GET', 'rk:' + JSON.stringify(msg));
+            xhr.setRequestHeader('token', RPC_TOKEN);
+            xhr.responseType = responseType;
+            xhr.addEventListener('load', (e) => {
+                resolve(xhr.response);
+            });
+            xhr.addEventListener('error' ,(e) => {
+                e.xhr = xhr;
+                reject(e);
+            });
+            xhr.send();
+
+            return xhr.response;
+        })
+    }
+
     function emit(param){
         let listeners = alt1.events[param.eventName];
         for(let i = 0; i < listeners.length; i++){
@@ -322,6 +341,19 @@
         // },
         // bindFindSubImg(id, imgstr, imgwidth, x, y, w, h) {
         //     return '';
+        // },
+        capture(x, y, w, h) {
+            let data = syncRpc({func: 'getRegionRaw', x: x, y: y, w: w, h: h});
+            let encoder = new TextEncoder();
+            return encoder.encode(data);
+        },
+        captureAsync(x, y, w, h) {
+            return asyncRpc({func: 'getRegionRaw', x: x, y: y, w: w, h: h}, 'arraybuffer')
+                .then((data) => new Uint8Array(data));
+        },
+        // async captureMultiAsync(areas) {
+        // },
+        // bindGetRegionBuffer(id, x, y, w, h) {
         // },
         addOCRFont(){
         },

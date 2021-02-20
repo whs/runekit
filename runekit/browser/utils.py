@@ -1,4 +1,4 @@
-import base64 as b64
+import base64
 from typing import TypeVar
 
 import numpy as np
@@ -65,7 +65,6 @@ def image_to_stream(
     width=None,
     height=None,
     mode="bgra",
-    base64=True,
 ) -> bytes:
     if isinstance(image, np.ndarray):
         out = np_crop(image, x, y, width, height)
@@ -85,9 +84,6 @@ def image_to_stream(
 
         out = ensure_image(image, mode).tobytes()
 
-    if base64:
-        return b64.b64encode(out)
-
     return out
 
 
@@ -104,7 +100,7 @@ def decode_color(color: int) -> QColor:
 
 
 def decode_image(img: str, width: int) -> np.ndarray:
-    img = b64.b64decode(img)
+    img = base64.b64decode(img)
     img = np.frombuffer(img, "<B")
     img.shape = (-1, width, 4)
     return img

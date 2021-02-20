@@ -204,14 +204,16 @@ class Alt1Api(QObject):
         if not self.app.has_permission("pixel"):
             raise ApiPermissionDeniedException("pixel")
 
-        return image_to_stream(self.app.game_instance.grab_region(x, y, w, h))
+        return base64.b64encode(
+            image_to_stream(self.app.game_instance.grab_region(x, y, w, h))
+        )
 
     def get_region_raw(self, x, y, w, h):
         if not self.app.has_permission("pixel"):
             raise ApiPermissionDeniedException("pixel")
 
         return image_to_stream(
-            self.app.game_instance.grab_region(x, y, w, h), base64=False, mode="rgba"
+            self.app.game_instance.grab_region(x, y, w, h), mode="rgba"
         )
 
     def bind_region(self, x, y, w, h):
@@ -236,7 +238,7 @@ class Alt1Api(QObject):
             self.logger.warning("bindGetRegion(%d) but image not bound", id)
             return ""
 
-        return image_to_stream(image.image, x, y, w, h)
+        return base64.b64encode(image_to_stream(image.image, x, y, w, h))
 
     # endregion
 

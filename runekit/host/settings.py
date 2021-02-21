@@ -17,7 +17,7 @@ from PySide2.QtWidgets import (
     QSpinBox,
 )
 
-from .applications import ApplicationModel
+from .appstore_model import AppStoreModel
 from ..ui import TooltipNotifier, TrayIconNotifier
 
 if TYPE_CHECKING:
@@ -27,7 +27,6 @@ if TYPE_CHECKING:
 class SettingsDialog(QMainWindow):
     def __init__(self, host: "Host", **kwargs):
         super().__init__(flags=Qt.Dialog, **kwargs)
-        self.setAttribute(Qt.WA_DeleteOnClose)
         self.host = host
         self._layout()
         self.setWindowTitle("RuneKit Settings")
@@ -57,7 +56,7 @@ class ApplicationPage(QWidget):
         self.setLayout(layout)
 
         tree = QTreeView(self)
-        model = ApplicationModel(self)
+        model = AppStoreModel(self)
         tree.setModel(model)
         tree.setUniformRowHeights(True)
         layout.addWidget(tree, 1)

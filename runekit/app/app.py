@@ -51,6 +51,7 @@ class App:
 
     @property
     def absolute_app_url(self) -> str:
+        # TODO: Remove
         if self.source_url:
             return urljoin(self.source_url, self.manifest["appUrl"])
 
@@ -58,6 +59,7 @@ class App:
 
     @property
     def absolute_config_url(self) -> str:
+        # TODO: Remove
         if self.source_url:
             return urljoin(self.source_url, self.manifest["configUrl"])
 
@@ -65,6 +67,7 @@ class App:
 
     @property
     def absolute_icon_url(self) -> Optional[str]:
+        # TODO: Remove
         if self.source_url and "iconUrl" in self.manifest:
             return urljoin(self.source_url, self.manifest["iconUrl"])
 

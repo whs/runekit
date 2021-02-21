@@ -1,7 +1,7 @@
 from PySide2.QtCore import QAbstractItemModel, Qt, QModelIndex
 
 
-class ApplicationModel(QAbstractItemModel):
+class AppStoreModel(QAbstractItemModel):
     h_columns = ("Name", "URL", "Description")
 
     def columnCount(self, parent: QModelIndex) -> int:

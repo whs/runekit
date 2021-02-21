@@ -5,7 +5,7 @@ import requests
 from runekit.alt1.schema import AppManifest
 
 
-def fetch_manifest(url: str) -> AppManifest:
+def fetch_bom_json(url: str):
     req = requests.get(url)
     req.raise_for_status()
 

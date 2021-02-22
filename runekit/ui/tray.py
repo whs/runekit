@@ -36,6 +36,9 @@ class TrayIcon(QSystemTrayIcon):
         settings.triggered.connect(self.on_settings)
         menu.addAction("Exit", lambda: QCoreApplication.instance().quit())
         self.setContextMenu(menu)
+        if hasattr(self, "_last_menu"):
+            self._last_menu.destroy()
+        self._last_menu = menu
 
     @Slot()
     def update_menu(self):

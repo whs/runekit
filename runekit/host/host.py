@@ -99,3 +99,4 @@ class Host:
     @Slot()
     def open_settings(self):
         self.setting_dialog.show()
+        self.setting_dialog.raise_()

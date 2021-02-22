@@ -88,6 +88,7 @@ class AppStore(QObject):
         thread.start()
         progress.exec_()
         self.settings.setValue("apps/_meta/isDefaultLoaded", True)
+        logger.info("Default apps loaded")
 
     def add_app(self, manifest_url: str, manifest: AppManifest):
         appid = app_id(manifest_url)

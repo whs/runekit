@@ -352,14 +352,14 @@
         // bindFindSubImg(id, imgstr, imgwidth, x, y, w, h) {
         //     return '';
         // },
-        capture(x, y, w, h) {
-            let data = syncRpc({func: 'getRegionRaw', x: x, y: y, w: w, h: h});
-            return str2ab(data);
-        },
-        captureAsync(x, y, w, h) {
-            return asyncRpc({func: 'getRegionRaw', x: x, y: y, w: w, h: h}, 'arraybuffer')
-                .then((data) => new Uint8ClampedArray(data));
-        },
+        // capture(x, y, w, h) {
+        //     let data = syncRpc({func: 'getRegionRaw', x: x, y: y, w: w, h: h});
+        //     return str2ab(data);
+        // },
+        // captureAsync(x, y, w, h) {
+        //     return asyncRpc({func: 'getRegionRaw', x: x, y: y, w: w, h: h}, 'arraybuffer')
+        //         .then((data) => new Uint8ClampedArray(data));
+        // },
         // async captureMultiAsync(areas) {
         // },
         // bindGetRegionBuffer(id, x, y, w, h) {

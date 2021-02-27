@@ -50,6 +50,7 @@ class Host:
 
     def launch_app_from_url(self, manifest_url) -> App:
         manifest = fetch_bom_json(manifest_url)
+        manifest["configUrl"] = manifest_url
         return self.launch_app(manifest)
 
     @Slot(str)

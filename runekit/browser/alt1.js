@@ -360,10 +360,20 @@
             return asyncRpc({func: 'getRegionRaw', x: x, y: y, w: w, h: h}, 'arraybuffer')
                 .then((data) => new Uint8ClampedArray(data));
         },
-        // async captureMultiAsync(areas) {
-        // },
-        // bindGetRegionBuffer(id, x, y, w, h) {
-        // },
+        async captureMultiAsync(areas) {
+            // XXX: This override the current bind
+            let boundId = await asyncRpc({func: 'bindRegion', x: 0, y: 0, w: alt1.rsWidth, h: alt1.rsHeight}, 'json');
+            let bounds = await Promise.all(Object.keys(areas).map((area) => {
+                let value = areas[area];
+                return asyncRpc({func: 'bindGetRegionRaw', id: boundId, x: value.x, y: value.y, w: value.width, h: value.height}, 'arraybuffer')
+                    .then((data) => ({[area]: new Uint8ClampedArray(data)}));
+            }));
+            return bounds.reduce((a, b) => ({...a, ...b}));
+        },
+        bindGetRegionBuffer(id, x, y, w, h) {
+            let data = syncRpc({func: 'bindGetRegionRaw', id: id, x: x, y: y, w: w, h: h});
+            return str2ab(data);
+        },
         addOCRFont(){
         },
     };

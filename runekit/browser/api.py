@@ -22,6 +22,7 @@ from PySide2.QtGui import QGuiApplication, QCursor, QScreen
 from PySide2.QtWebChannel import QWebChannel
 from PySide2.QtWebEngineCore import QWebEngineUrlSchemeHandler, QWebEngineUrlRequestJob
 
+from runekit.alt1.schema import CaptureMulti
 from runekit.browser.overlay import OverlayApi
 from runekit.browser.utils import (
     ApiPermissionDeniedException,
@@ -30,6 +31,7 @@ from runekit.browser.utils import (
     decode_image,
 )
 from runekit.game.instance import ImageType
+from runekit.image.np_utils import ensure_np_image, np_crop
 from runekit.ui.tray import tray_icon
 
 if TYPE_CHECKING:
@@ -71,6 +73,7 @@ class Alt1Api(QObject):
             "getRegionRaw": self.get_region_raw,
             "bindRegion": self.bind_region,
             "bindGetRegion": self.bind_get_region,
+            "bindGetRegionRaw": self.bind_get_region_raw,
         }
 
         self._update_screen_info()
@@ -239,6 +242,21 @@ class Alt1Api(QObject):
             return ""
 
         return base64.b64encode(image_to_stream(image.image, x, y, w, h))
+
+    def bind_get_region_raw(self, id, x, y, w, h):
+        if not self.app.has_permission("pixel"):
+            raise ApiPermissionDeniedException("pixel")
+
+        if id == 0:
+            return ""
+
+        try:
+            image = self._bound_regions[id - 1]
+        except IndexError:
+            self.logger.warning("bindGetRegionRaw(%d) but image not bound", id)
+            return ""
+
+        return image_to_stream(image.image, x, y, w, h, mode="rgba")
 
     # endregion
 

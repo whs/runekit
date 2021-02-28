@@ -25,3 +25,13 @@ class RequestHandler(typing.TypedDict):
     handlerName: str
     handlerUrl: str
     handlerScript: str
+
+
+class RectLike(typing.TypedDict):
+    x: int
+    y: int
+    width: int
+    height: int
+
+
+CaptureMulti = typing.Dict[str, typing.Optional[RectLike]]

@@ -46,6 +46,7 @@ class Host:
                 app.web_profile.deleteLater()
                 app.web_profile = None
 
+    def __del__(self):
         self.open_app = []
 
     def launch_app_from_url(self, manifest_url) -> App:

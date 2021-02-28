@@ -1,16 +1,20 @@
+from pathlib import Path
 import json
 import logging
 import hashlib
-from typing import Iterator, Tuple
+from typing import Iterator, Tuple, Optional
 from urllib.parse import urljoin
 
+import requests
 from PySide2.QtCore import (
     QObject,
     QSettings,
     QThread,
     Signal,
     Slot,
+    QStandardPaths,
 )
+from PySide2.QtGui import QIcon, QPixmap
 from PySide2.QtWidgets import QProgressDialog
 
 from runekit.alt1.schema import AppManifest
@@ -44,9 +48,9 @@ class _FetchRegistryThread(QThread):
             self.progress.emit(1)
             for index, app in enumerate(default_apps):
                 self.label.emit(f"Installing {app['name']}")
-                self.progress.emit(index + 2)
                 url = urljoin(REGISTRY_URL, app["url"])
                 self.add_app(url, app["folder"])
+                self.progress.emit(index + 2)
 
                 if self.canceled:
                     return
@@ -75,30 +79,58 @@ class AppStore(QObject):
         super().__init__()
         self.settings = QSettings(self)
 
+        qt_write_base = Path(
+            QStandardPaths.writableLocation(QStandardPaths.AppConfigLocation)
+        )
+        qt_write_base.mkdir(exist_ok=True)
+
+        self.icon_write_dir = qt_write_base / "app_icons"
+        self.icon_write_dir.mkdir(exist_ok=True)
+
     def has_default_apps(self) -> bool:
         return self.settings.value("apps/_meta/isDefaultLoaded")
 
     def load_default_apps(self):
-        progress = QProgressDialog("Loading default apps", "Cancel", 0, 100)
-        thread = _FetchRegistryThread(self)
-        thread.progress.connect(progress.setValue)
-        thread.items.connect(progress.setMaximum)
-        thread.label.connect(progress.setLabelText)
-        progress.canceled.connect(thread.cancel)
-        thread.start()
-        progress.exec_()
-        self.settings.setValue("apps/_meta/isDefaultLoaded", True)
-        logger.info("Default apps loaded")
+        def on_progress(value):
+            if value != self.default_app_progress.maximum():
+                return
+
+            self.settings.setValue("apps/_meta/isDefaultLoaded", True)
+            logger.info("Default apps loaded")
+            self.default_app_thread.progress.disconnect(on_progress)
+            del self.default_app_progress
+            del self.default_app_thread
+
+        self.default_app_progress = QProgressDialog(
+            "Loading default apps", "Cancel", 0, 100
+        )
+
+        self.default_app_thread = _FetchRegistryThread(self)
+        self.default_app_thread.progress.connect(self.default_app_progress.setValue)
+        self.default_app_thread.progress.connect(on_progress)
+        self.default_app_thread.items.connect(self.default_app_progress.setMaximum)
+        self.default_app_thread.label.connect(self.default_app_progress.setLabelText)
+        self.default_app_progress.canceled.connect(self.default_app_thread.cancel)
+        self.default_app_thread.start()
+
+        self.default_app_progress.show()
 
     def add_app(self, manifest_url: str, manifest: AppManifest):
         appid = app_id(manifest_url)
 
         try:
             manifest["appUrl"] = urljoin(manifest_url, manifest["appUrl"])
-            manifest["iconUrl"] = urljoin(manifest_url, manifest["iconUrl"])
+            manifest["iconUrl"] = (
+                urljoin(manifest_url, manifest["iconUrl"])
+                if manifest["iconUrl"]
+                else ""
+            )
             manifest["configUrl"] = urljoin(manifest_url, manifest["configUrl"])
         except KeyError:
             raise AddAppError(manifest_url)
+
+        if manifest["iconUrl"]:
+            self.download_app_icon(appid, manifest["iconUrl"])
 
         self.settings.setValue(f"apps/{appid}", json.dumps(manifest))
         self.app_change.emit()
@@ -125,6 +157,23 @@ class AppStore(QObject):
 
         settings.setValue(f"apps/_folder/{folder}/{last_id + 1}", appid)
         self.app_change.emit()
+
+    def download_app_icon(self, appid: str, url: str):
+        dest = self.icon_write_dir / (appid + ".png")
+        req = requests.get(url)
+        with dest.open("wb") as fp:
+            fp.write(req.content)
+
+        logger.info("App icon %s wrote to %s", appid, str(dest))
+
+    def icon(self, appid: str) -> Optional[QIcon]:
+        fn = QStandardPaths.locate(
+            QStandardPaths.AppConfigLocation, "app_icons/" + appid + ".png"
+        )
+        if fn == "":
+            return None
+
+        return QIcon(QPixmap(fn))
 
     def __iter__(self) -> Iterator[Tuple[str, AppManifest]]:
         settings = QSettings()

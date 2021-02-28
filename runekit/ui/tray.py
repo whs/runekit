@@ -21,24 +21,28 @@ class TrayIcon(QSystemTrayIcon):
 
         self.host = host
         self._setup_menu()
+        self.setContextMenu(self.menu)
 
     def _setup_menu(self):
-        menu = QMenu("RuneKit")
+        if not hasattr(self, "menu"):
+            self.menu = QMenu("RuneKit")
+
+        self.menu.clear()
 
         for app_id, manifest in self.host.app_store:
-            app_menu = menu.addAction(manifest["appName"])
+            app_menu = self.menu.addAction(manifest["appName"])
             app_menu.triggered.connect(
                 lambda _=None, app_id=app_id: self.host.launch_app_id(app_id)
             )
 
-        menu.addSeparator()
-        settings = menu.addAction("Settings")
-        settings.triggered.connect(self.on_settings)
-        menu.addAction("Exit", lambda: QCoreApplication.instance().quit())
-        self.setContextMenu(menu)
-        if hasattr(self, "_last_menu"):
-            self._last_menu.destroy()
-        self._last_menu = menu
+            icon = self.host.app_store.icon(app_id)
+            if icon:
+                app_menu.setIcon(icon)
+
+        self.menu.addSeparator()
+        self.menu_settings = self.menu.addAction("Settings")
+        self.menu_settings.triggered.connect(self.on_settings)
+        self.menu.addAction("Exit", lambda: QCoreApplication.instance().quit())
 
     @Slot()
     def update_menu(self):

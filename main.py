@@ -1,15 +1,13 @@
 import logging
+import signal
 import sys
 import traceback
 
 import click
-from PySide2.QtCore import QSettings, Qt
+from PySide2.QtCore import QSettings, Qt, QTimer
 from PySide2.QtWidgets import (
     QApplication,
     QMessageBox,
-    QInputDialog,
-    QDialog,
-    QSystemTrayIcon,
 )
 
 import runekit._resources
@@ -37,6 +35,12 @@ def main(app_url, game_index, qt_args):
     app.setOrganizationName("cupco.de")
     app.setOrganizationDomain("cupco.de")
     app.setApplicationName("RuneKit")
+
+    signal.signal(signal.SIGINT, lambda no, frame: app.quit())
+
+    timer = QTimer()
+    timer.start(300)
+    timer.timeout.connect(lambda: None)
 
     QSettings.setDefaultFormat(QSettings.IniFormat)
 

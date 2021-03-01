@@ -2,9 +2,8 @@ import logging
 import sys
 from typing import Optional
 
-import requests
-from PySide2.QtCore import QSize, Qt, QRunnable, Slot, QObject, Signal, QThreadPool
-from PySide2.QtGui import QIcon, QPixmap
+from PySide2.QtCore import QSize, Qt, QThreadPool
+from PySide2.QtGui import QIcon
 
 from runekit.app.view.browser_window import BrowserWindow
 
@@ -36,20 +35,10 @@ class AppWindow(BrowserWindow):
         )
 
         self.browser.load(self.app.absolute_app_url)
-        self._update_app_icon()
 
-    def _update_app_icon(self):
-        if self.app.absolute_icon_url:
-            self.logger.debug("Fetching app icon")
-            icon_job = IconFetcher(self.app.absolute_icon_url)
-
-            def update_app_icon(icon: QPixmap):
-                self.logger.debug("App icon loaded")
-                self.app_icon = icon
-                self.setWindowIcon(QIcon(icon))
-
-            icon_job.signals.finished.connect(update_app_icon)
-            self.pool.start(icon_job)
+        self.app_icon = self.app.host.app_store.icon(self.app.app_id)
+        if self.app_icon:
+            self.setWindowIcon(self.app_icon)
 
     def minimumSize(self) -> QSize:
         return QSize(self.app.manifest["minWidth"], self.app.manifest["minHeight"])
@@ -61,22 +50,3 @@ class AppWindow(BrowserWindow):
 
     def maximumSize(self) -> QSize:
         return QSize(self.app.manifest["maxWidth"], self.app.manifest["maxHeight"])
-
-
-class IconFetcherSignal(QObject):
-    finished = Signal(QPixmap)
-
-
-class IconFetcher(QRunnable):
-    def __init__(self, icon_url: str):
-        super().__init__()
-        self.icon_url = icon_url
-        self.signals = IconFetcherSignal()
-
-    @Slot()
-    def run(self):
-        icon_req = requests.get(self.icon_url)
-        icon_req.raise_for_status()
-        pixmap = QPixmap()
-        pixmap.loadFromData(icon_req.content)
-        self.signals.finished.emit(pixmap)

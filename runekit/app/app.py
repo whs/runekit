@@ -13,14 +13,16 @@ if TYPE_CHECKING:
 class App:
     host: "Host"
     manifest: AppManifest
+    app_id: str
     game_instance: "GameInstance"
     source_url: Optional[str]
     window: Optional[AppWindow] = None
     alt1api: Optional[Alt1Api] = None
     web_profile: Optional[WebProfile] = None
 
-    def __init__(self, host, manifest, game_instance, source_url=None):
+    def __init__(self, host, app_id, manifest, game_instance, source_url=None):
         self.host = host
+        self.app_id = app_id
         self.manifest = manifest
         self.game_instance = game_instance
         self.source_url = source_url

@@ -1,7 +1,9 @@
+import json
 import sys
 from typing import TYPE_CHECKING
 
 from PySide2.QtCore import QSize, Qt, Slot, QTimer
+from PySide2.QtGui import QIcon
 from PySide2.QtWidgets import (
     QTabWidget,
     QVBoxLayout,
@@ -15,6 +17,10 @@ from PySide2.QtWidgets import (
     QHBoxLayout,
     QTreeView,
     QSpinBox,
+    QPushButton,
+    QAbstractItemView,
+    QInputDialog,
+    QMessageBox,
 )
 
 from .appstore_model import AppStoreModel
@@ -40,7 +46,7 @@ class SettingsDialog(QMainWindow):
         self.setContentsMargins(11, 11, 11, 11)
 
     def sizeHint(self) -> QSize:
-        return QSize(500, 300)
+        return QSize(800, 500)
 
 
 class ApplicationPage(QWidget):
@@ -49,17 +55,86 @@ class ApplicationPage(QWidget):
     def __init__(self, host: "Host", **kwargs):
         super().__init__(**kwargs)
         self.host = host
+        self.model = AppStoreModel(self, self.host.app_store)
         self._layout()
 
     def _layout(self):
         layout = QHBoxLayout(self)
         self.setLayout(layout)
 
-        tree = QTreeView(self)
-        model = AppStoreModel(self)
-        tree.setModel(model)
-        tree.setUniformRowHeights(True)
-        layout.addWidget(tree, 1)
+        self.tree = QTreeView(self)
+        self.tree.setModel(self.model)
+        self.tree.setUniformRowHeights(True)
+        self.tree.setColumnWidth(0, 200)
+        self.tree.setDragEnabled(True)
+        self.tree.setDragDropMode(QAbstractItemView.InternalMove)
+        self.tree.viewport().setAcceptDrops(True)
+        layout.addWidget(self.tree, 1)
+
+        buttons = QVBoxLayout()
+        buttons.setAlignment(Qt.AlignTop)
+
+        add_button = QPushButton(QIcon.fromTheme("list-add"), "", self)
+        add_button.setToolTip("Add application")
+        buttons.addWidget(add_button)
+
+        mkdir_button = QPushButton(QIcon.fromTheme("folder-new"), "", self)
+        mkdir_button.setToolTip("Make directory")
+        mkdir_button.clicked.connect(self.on_mkdir)
+        buttons.addWidget(mkdir_button)
+
+        delete_button = QPushButton(QIcon.fromTheme("list-remove"), "", self)
+        delete_button.setToolTip("Remove selected item")
+        delete_button.clicked.connect(self.on_delete)
+        buttons.addWidget(delete_button)
+
+        layout.addLayout(buttons)
+
+    def on_mkdir(self):
+        dialog = QInputDialog(self)
+        dialog.setLabelText("Directory name")
+
+        if dialog.exec_() == QInputDialog.Rejected:
+            return
+
+        dirname = dialog.textValue().strip()
+
+        if not dirname or "/" in dirname:
+            QMessageBox.critical(
+                self, "Invalid input", "This directory name cannot be used"
+            )
+            return
+
+        self.host.app_store.mkdir(dirname)
+
+    def on_delete(self):
+        data = self.model.mimeData(self.tree.selectedIndexes())
+        if not data:
+            return
+
+        data = json.loads(data.data("application/x-qabstractitemmodeldatalist").data())
+        if data["type"] == "dir":
+            confirm = QMessageBox.question(
+                self,
+                "Remove folder",
+                f"Remove {data['id']}?\n\nAll applications will be moved to the top level",
+            )
+            if confirm == QMessageBox.StandardButton.No:
+                return
+
+            self.host.app_store.rmdir(data["id"])
+        else:
+            app = self.host.app_store[data["id"]]
+            confirm = QMessageBox.question(
+                self,
+                "Remove application",
+                f"Remove {app['appName']}?",
+            )
+            if confirm == QMessageBox.StandardButton.No:
+                return
+
+            self.host.app_store.remove_app(data["id"])
+            # FIXME: Clear settings???
 
 
 class InterfacePage(QWidget):
@@ -89,16 +164,16 @@ class InterfacePage(QWidget):
 
         # I think this doesn't belong to "Interface"
         # either rename it to settings or make separate game tab
-        refresh_label = QLabel("Refresh interval", self)
-        refresh_layout = QHBoxLayout(self)
-        refresh_field = QSpinBox(self)
-        refresh_field.setRange(100, 2000)
-        refresh_field.setSingleStep(100)
-        refresh_field.setValue(100)
-        refresh_layout.addWidget(refresh_field, 1)
-        refresh_unit = QLabel("ms", self)
-        refresh_layout.addWidget(refresh_unit, 0)
-        layout.addRow(refresh_label, refresh_layout)
+        capturei_label = QLabel("Capture interval", self)
+        capturei_layout = QHBoxLayout()
+        capturei_field = QSpinBox(self)
+        capturei_field.setRange(100, 2000)
+        capturei_field.setSingleStep(100)
+        capturei_field.setValue(100)
+        capturei_layout.addWidget(capturei_field, 1)
+        capturei_unit = QLabel("ms", self)
+        capturei_layout.addWidget(capturei_unit, 0)
+        layout.addRow(capturei_label, capturei_layout)
 
     @Slot(int)
     def preview_tooltip(self, index: int):

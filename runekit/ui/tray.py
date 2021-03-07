@@ -29,8 +29,26 @@ class TrayIcon(QSystemTrayIcon):
 
         self.menu.clear()
 
-        for app_id, manifest in self.host.app_store:
-            app_menu = self.menu.addAction(manifest["appName"])
+        self._setup_app_menu("", self.menu)
+
+        self.menu.addSeparator()
+        self.menu_settings = self.menu.addAction("Settings")
+        self.menu_settings.triggered.connect(self.on_settings)
+        self.menu.addAction(
+            QIcon.fromTheme("application-exit"),
+            "Exit",
+            lambda: QCoreApplication.instance().quit(),
+        )
+
+    def _setup_app_menu(self, path: str, menu: QMenu):
+        for app_id, manifest in self.host.app_store.list_app(path):
+            if manifest is None:
+                # Folder
+                submenu = menu.addMenu(QIcon.fromTheme("folder"), app_id)
+                self._setup_app_menu(app_id, submenu)
+                continue
+
+            app_menu = menu.addAction(manifest["appName"])
             app_menu.triggered.connect(
                 lambda _=None, app_id=app_id: self.host.launch_app_id(app_id)
             )
@@ -38,11 +56,6 @@ class TrayIcon(QSystemTrayIcon):
             icon = self.host.app_store.icon(app_id)
             if icon:
                 app_menu.setIcon(icon)
-
-        self.menu.addSeparator()
-        self.menu_settings = self.menu.addAction("Settings")
-        self.menu_settings.triggered.connect(self.on_settings)
-        self.menu.addAction("Exit", lambda: QCoreApplication.instance().quit())
 
     @Slot()
     def update_menu(self):

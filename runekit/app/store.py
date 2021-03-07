@@ -2,7 +2,7 @@ from pathlib import Path
 import json
 import logging
 import hashlib
-from typing import Iterator, Tuple, Optional
+from typing import Iterator, Tuple, Optional, Union
 from urllib.parse import urljoin
 
 import requests
@@ -62,8 +62,7 @@ class _FetchRegistryThread(QThread):
         manifest = fetch_bom_json(url)
         try:
             self.appstore.add_app(url, manifest)
-            if folder != "":
-                self.appstore.add_app_to_folder(url, folder)
+            self.appstore.add_app_to_folder(app_id(url), folder)
         except AddAppError:
             logger.warning("Unable to add application %s", url, exc_info=True)
 
@@ -138,24 +137,92 @@ class AppStore(QObject):
             "Application %s (%s:%s) installed", manifest["appName"], appid, manifest_url
         )
 
-    def add_app_to_folder(self, manifest_url: str, folder: str):
+    def mkdir(self, folder: str):
+        assert folder
         assert "/" not in folder
-        appid = app_id(manifest_url)
+
+        settings = QSettings()
+        settings.beginGroup(f"apps/_folder/{folder}")
+        settings.setValue("_dir", "true")
+        self.app_change.emit()
+
+    def add_app_to_folder(self, appid: str, folder: str = "", _emit=True):
+        assert "/" not in folder
         settings = QSettings()
         settings.beginGroup(f"apps/_folder/{folder}")
 
         last_id = 0
-        for key in self.settings.childKeys():
+        for key in settings.childKeys():
+            if "_" in key:
+                continue
+
             last_id = max(int(key), last_id)
-            if appid == self.settings.value(key):
-                self.settings.endGroup()
+            if appid == settings.value(key):
+                settings.endGroup()
                 return
 
-        keys = [int(x) for x in self.settings.childKeys()]
+        keys = [int(x) for x in settings.childKeys() if "_" not in x]
         last_id = max(keys) if keys else 0
         settings.endGroup()
 
         settings.setValue(f"apps/_folder/{folder}/{last_id + 1}", appid)
+
+        if _emit:
+            self.app_change.emit()
+
+    def delete_app_from_folder(self, appid: str, folder: str):
+        assert "/" not in folder
+        settings = QSettings()
+        settings.beginGroup(f"apps/_folder/{folder}")
+
+        for key in settings.childKeys():
+            if appid == settings.value(key):
+                settings.remove(key)
+                self.app_change.emit()
+                return
+
+    def remove_app(self, appid: str):
+        settings = QSettings()
+        settings.beginGroup("apps/_folder/")
+
+        def recurse():
+            for key in settings.childKeys():
+                if settings.value(key) == appid:
+                    settings.remove(key)
+
+            for childGroup in settings.childGroups():
+                settings.beginGroup(childGroup)
+                recurse()
+                settings.endGroup()
+
+        recurse()
+
+        self.settings.remove(f"apps/{appid}")
+
+        icon_file = self.icon_write_dir / (appid + ".png")
+        icon_file.unlink(True)
+
+        self.app_change.emit()
+
+    def rmdir(self, folder: str):
+        assert folder
+        assert "/" not in folder
+
+        settings = QSettings()
+        settings.beginGroup(f"apps/_folder/{folder}")
+
+        for key in settings.childKeys():
+            if "_" in key:
+                continue
+
+            try:
+                int(key)
+            except ValueError:
+                continue
+
+            self.add_app_to_folder(settings.value(key), "", _emit=False)
+
+        settings.remove("")
         self.app_change.emit()
 
     def download_app_icon(self, appid: str, url: str):
@@ -175,7 +242,7 @@ class AppStore(QObject):
 
         return QIcon(QPixmap(fn))
 
-    def __iter__(self) -> Iterator[Tuple[str, AppManifest]]:
+    def all_apps(self) -> Iterator[Tuple[str, AppManifest]]:
         settings = QSettings()
         settings.beginGroup("apps")
         for appid in settings.childKeys():
@@ -186,6 +253,24 @@ class AppStore(QObject):
             yield appid, manifest
 
         settings.endGroup()
+
+    def list_app(self, root: str) -> Iterator[Tuple[str, Union[AppManifest, None]]]:
+        settings = QSettings()
+
+        settings.beginGroup(f"apps/_folder/" + root)
+        for key in settings.childGroups():
+            yield key, None
+        for key in settings.childKeys():
+            try:
+                int(key)
+            except ValueError:
+                continue
+
+            appid = settings.value(key)
+            yield appid, self[appid]
+
+    def __iter__(self):
+        yield from self.all_apps()
 
     def __getitem__(self, item: str) -> AppManifest:
         assert not item.startswith("_")

@@ -6,6 +6,7 @@ from PySide2.QtWidgets import QMessageBox
 from runekit.alt1.schema import AppManifest
 from runekit.alt1.utils import fetch_bom_json
 from runekit.app import App, AppStore
+from runekit.app.store import app_id
 from runekit.host.settings import SettingsDialog
 from runekit.ui import AutoNotifier
 from runekit.ui.tray import TrayIcon
@@ -46,12 +47,13 @@ class Host:
                 app.web_profile.deleteLater()
                 app.web_profile = None
 
+    def __del__(self):
         self.open_app = []
 
     def launch_app_from_url(self, manifest_url) -> App:
         manifest = fetch_bom_json(manifest_url)
         manifest["configUrl"] = manifest_url
-        return self.launch_app(manifest)
+        return self.launch_app(app_id(manifest_url), manifest)
 
     @Slot(str)
     def launch_app_id(self, appid):
@@ -65,9 +67,9 @@ class Host:
             )
             return
 
-        self.launch_app(manifest)
+        self.launch_app(appid, manifest)
 
-    def launch_app(self, manifest: AppManifest):
+    def launch_app(self, appid: str, manifest: AppManifest):
         instances = self.manager.get_instances()
 
         if len(instances) == 0:
@@ -80,6 +82,7 @@ class Host:
 
         app = App(
             host=self,
+            app_id=appid,
             manifest=manifest,
             game_instance=instances[0],
             source_url=manifest["configUrl"],
@@ -100,3 +103,4 @@ class Host:
     @Slot()
     def open_settings(self):
         self.setting_dialog.show()
+        self.setting_dialog.raise_()

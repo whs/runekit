@@ -1,4 +1,5 @@
 import logging
+import os
 import struct
 from typing import List, Dict, Tuple, Union
 
@@ -16,6 +17,7 @@ from ..overlay import DesktopWideOverlay
 
 MAX_SHM = 10
 NET_ACTIVE_WINDOW = "_NET_ACTIVE_WINDOW"
+WM_APP_NAME = os.getenv("RK_WM_APP_NAME", "RuneScape")
 
 
 class X11GameManager(GameManager):
@@ -59,7 +61,7 @@ class X11GameManager(GameManager):
 
             if wm_class:
                 instance_name, app_name = wm_class.split("\00")
-                if app_name == "RuneScape":
+                if app_name == WM_APP_NAME:
                     if wid not in self._instances:
                         instance = X11GameInstance(self, wid, parent=self)
                         self._instances[wid] = instance

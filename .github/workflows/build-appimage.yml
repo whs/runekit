@@ -15,24 +15,18 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.9
+      - name: Get linuxdeploy
+        run: |
+          wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage -O build/linuxdeploy.AppImage
+          chmod +x build/linuxdeploy.AppImage
       - name: Install dependencies
         run: |
           python -m pip install poetry
           poetry install
-          mkdir build
       - name: Build resources
         run: poetry run make runekit/_resources.py
-      - name: Get linuxdeploy
-        uses: dsaltares/fetch-gh-release-asset@master
-        with:
-          repo: linuxdeploy/linuxdeploy
-          version: tags/continuous
-          file: linuxdeploy-x86_64.AppImage
-          target: build/linuxdeploy.AppImage
       - name: Build AppImage
-        run: |
-          chmod +x build/linuxdeploy.AppImage
-          LINUXDEPLOY=build/linuxdeploy.AppImage make dist/RuneKit.AppImage
+        run: LINUXDEPLOY=build/linuxdeploy.AppImage make dist/RuneKit.AppImage
       - name: Upload
         uses: softprops/action-gh-release@v1
         if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/')

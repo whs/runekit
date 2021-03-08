@@ -33,6 +33,8 @@ jobs:
         with:
           prerelease: true
           tag_name: continuous
+          name: Continuous Integration
+          body: These files are automatically built with GitHub Actions from the master branch.
           files: |
             dist/RuneKit.AppImage
             dist/runekit.tar.gz

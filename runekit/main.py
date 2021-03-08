@@ -1,9 +1,10 @@
 import logging
+import signal
 import sys
 import traceback
 
 import click
-from PySide2.QtCore import QSettings, Qt
+from PySide2.QtCore import QSettings, Qt, QTimer
 from PySide2.QtWidgets import (
     QApplication,
     QMessageBox,
@@ -35,13 +36,17 @@ def main(app_url, game_index, qt_args):
     app.setOrganizationDomain("cupco.de")
     app.setApplicationName("RuneKit")
 
+    signal.signal(signal.SIGINT, lambda no, frame: app.quit())
+
+    timer = QTimer()
+    timer.start(300)
+    timer.timeout.connect(lambda: None)
+
     QSettings.setDefaultFormat(QSettings.IniFormat)
 
     try:
         game_manager = get_platform_manager()
         host = Host(game_manager)
-        if not host.app_store.has_default_apps():
-            host.app_store.load_default_apps()
 
         if app_url == "settings":
             host.open_settings()
@@ -51,6 +56,9 @@ def main(app_url, game_index, qt_args):
             logging.info("Loading app")
             game_app = host.launch_app_from_url(app_url)
             game_app.window.destroyed.connect(app.quit)
+        else:
+            if not host.app_store.has_default_apps():
+                host.app_store.load_default_apps()
 
         app.exec_()
         sys.exit(0)

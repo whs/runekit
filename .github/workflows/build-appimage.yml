@@ -3,27 +3,27 @@ on: [push]
 jobs:
   build:
     runs-on: ubuntu-18.04
-  steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.9
-    - name: Install dependencies
-      run: |
-        python -m pip install poetry
-        poetry install
-    - name: Build resources
-      run: poetry run make runekit/_resources.py
-    - name: Build AppImage
-      run: make dist/RuneKit.AppImage
-    - name: Upload
-      uses: softprops/action-gh-release@v1
-      if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/')
-      with:
-        prerelease: true
-        files: |
-          dist/RuneKit.AppImage
-          dist/runekit.tar.gz
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      - name: Install dependencies
+        run: |
+          python -m pip install poetry
+          poetry install
+      - name: Build resources
+        run: poetry run make runekit/_resources.py
+      - name: Build AppImage
+        run: make dist/RuneKit.AppImage
+      - name: Upload
+        uses: softprops/action-gh-release@v1
+        if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/')
+        with:
+          prerelease: true
+          files: |
+            dist/RuneKit.AppImage
+            dist/runekit.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

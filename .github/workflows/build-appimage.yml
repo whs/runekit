@@ -1,16 +1,16 @@
 name: build-appimage
-on: [push]
+on: [push, create]
 jobs:
   bump-continuous:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     if: github.ref == 'refs/heads/master'
     steps:
       - name: Bump tag
-        uses: mathieudutour/github-tag-action@v5.2
+        uses: richardsimko/update-tag@v1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          custom_tag: continuous
-          tag_prefix: ''
+          tag_name: continuous
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   build:
     runs-on: ubuntu-18.04
     if: startsWith(github.ref, 'refs/tags/')

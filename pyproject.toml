@@ -4,6 +4,7 @@ version = "0.1.0"
 description = ""
 authors = ["Your Name <you@example.com>"]
 license = "GPL"
+include = ["runekit/_resources.py"]
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.10"
@@ -20,13 +21,8 @@ psutil = "^5.8.0"
 opencv-python-headless = "^4.5.1"
 
 [tool.poetry.dev-dependencies]
-Cython = "^0.29.21"
 black = "^20.8b1"
 pyinstaller = [{ version="^4.2", platform="darwin" }]
 
-[tool.poetry.build]
-script = "build.py"
-
-[build-system]
-requires = ["poetry-core>=1.1.0"]
-build-backend = "poetry.core.masonry.api"
+[tool.poetry.scripts]
+runekit = 'runekit.main:main'

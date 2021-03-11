@@ -81,7 +81,7 @@ class AppStore(QObject):
         qt_write_base = Path(
             QStandardPaths.writableLocation(QStandardPaths.AppConfigLocation)
         )
-        qt_write_base.mkdir(exist_ok=True)
+        qt_write_base.mkdir(parents=True, exist_ok=True)
 
         self.icon_write_dir = qt_write_base / "app_icons"
         self.icon_write_dir.mkdir(exist_ok=True)

@@ -9,7 +9,7 @@ from PySide2.QtGui import QWindow, QGuiApplication
 from PySide2.QtWidgets import QGraphicsItem
 
 from runekit.game.instance import GameInstance
-from runekit.game.psutil import PsUtilNetStat
+from runekit.game.psutil_mixins import PsUtilNetStat
 from runekit.game.qt import QtGrabMixin, QtEmbedMixin
 from .ximage import zpixmap_shm_to_image
 

@@ -12,7 +12,7 @@ import ApplicationServices
 from PySide2.QtWidgets import QGraphicsItem
 
 from ..instance import GameInstance
-from ..psutil import PsUtilNetStat
+from ..psutil_mixins import PsUtilNetStat
 
 if TYPE_CHECKING:
     from .manager import QuartzGameManager

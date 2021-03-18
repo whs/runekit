@@ -1,8 +1,10 @@
+import sys
+import traceback
 from pathlib import Path
 import json
 import logging
 import hashlib
-from typing import Iterator, Tuple, Optional, Union
+from typing import Iterator, Tuple, Optional, Union, List
 from urllib.parse import urljoin
 
 import requests
@@ -15,7 +17,7 @@ from PySide2.QtCore import (
     QStandardPaths,
 )
 from PySide2.QtGui import QIcon, QPixmap
-from PySide2.QtWidgets import QProgressDialog
+from PySide2.QtWidgets import QProgressDialog, QMessageBox
 
 from runekit.alt1.schema import AppManifest
 from runekit.alt1.utils import fetch_bom_json
@@ -34,23 +36,45 @@ class _FetchRegistryThread(QThread):
     progress = Signal(int)
     items = Signal(int)
     label = Signal(str)
+    failed = Signal(tuple)
 
     canceled = False
 
-    def __init__(self, parent: "AppStore"):
+    def __init__(
+        self,
+        parent: "AppStore",
+        apps_manifest: Optional[str] = None,
+        apps: Optional[List[str]] = None,
+    ):
         super().__init__(parent=parent)
+        assert not apps_manifest and apps
+
         self.appstore = parent
+        self.apps_manifest = apps_manifest
+        self.apps = apps
 
     def run(self):
         try:
-            default_apps = fetch_bom_json(REGISTRY_URL)
-            self.items.emit(len(default_apps) + 1)
-            self.progress.emit(1)
-            for index, app in enumerate(default_apps):
-                self.label.emit(f"Installing {app['name']}")
-                url = urljoin(REGISTRY_URL, app["url"])
-                self.add_app(url, app["folder"])
-                self.progress.emit(index + 2)
+            progress_extra = 0
+            if self.apps_manifest:
+                apps = fetch_bom_json(REGISTRY_URL)
+                self.items.emit(len(apps) + 1)
+                self.progress.emit(1)
+                progress_extra = 1
+            else:
+                apps = self.apps
+                self.items.emit(len(apps))
+
+            for index, app in enumerate(apps):
+                if type(app) == str:
+                    self.label.emit(f"Installing app {app}")
+                    self.add_app(app)
+                else:
+                    self.label.emit(f"Installing {app['name']}")
+                    url = urljoin(REGISTRY_URL, app["url"])
+                    self.add_app(url, app["folder"])
+
+                self.progress.emit(index + progress_extra + 1)
 
                 if self.canceled:
                     return
@@ -59,12 +83,13 @@ class _FetchRegistryThread(QThread):
             self.progress.emit(100)
 
     def add_app(self, url, folder=""):
-        manifest = fetch_bom_json(url)
         try:
+            manifest = fetch_bom_json(url)
             self.appstore.add_app(url, manifest)
             self.appstore.add_app_to_folder(app_id(url), folder)
-        except AddAppError:
+        except:
             logger.warning("Unable to add application %s", url, exc_info=True)
+            self.failed.emit(sys.exc_info())
 
     @Slot()
     def cancel(self):
@@ -91,28 +116,57 @@ class AppStore(QObject):
 
     def load_default_apps(self):
         def on_progress(value):
-            if value != self.default_app_progress.maximum():
+            if value != self.app_progress.maximum():
                 return
 
             self.settings.setValue("apps/_meta/isDefaultLoaded", True)
             logger.info("Default apps loaded")
-            self.default_app_thread.progress.disconnect(on_progress)
-            del self.default_app_progress
-            del self.default_app_thread
+            self.add_app_thread.progress.disconnect(on_progress)
+            del self.app_progress
+            del self.add_app_thread
 
-        self.default_app_progress = QProgressDialog(
-            "Loading default apps", "Cancel", 0, 100
-        )
+        self.app_progress = QProgressDialog("Loading default apps", "Cancel", 0, 100)
 
-        self.default_app_thread = _FetchRegistryThread(self)
-        self.default_app_thread.progress.connect(self.default_app_progress.setValue)
-        self.default_app_thread.progress.connect(on_progress)
-        self.default_app_thread.items.connect(self.default_app_progress.setMaximum)
-        self.default_app_thread.label.connect(self.default_app_progress.setLabelText)
-        self.default_app_progress.canceled.connect(self.default_app_thread.cancel)
-        self.default_app_thread.start()
+        self.add_app_thread = _FetchRegistryThread(self, apps_manifest=REGISTRY_URL)
+        self.add_app_thread.progress.connect(self.app_progress.setValue)
+        self.add_app_thread.progress.connect(on_progress)
+        self.add_app_thread.items.connect(self.app_progress.setMaximum)
+        self.add_app_thread.label.connect(self.app_progress.setLabelText)
+        self.app_progress.canceled.connect(self.add_app_thread.cancel)
+        self.add_app_thread.start()
 
-        self.default_app_progress.show()
+        self.app_progress.show()
+
+    def add_app_ui(self, manifests: List[str]):
+        def on_progress(value):
+            if value != self.app_progress.maximum():
+                return
+
+            self.add_app_thread.progress.disconnect(on_progress)
+            del self.app_progress
+            del self.add_app_thread
+
+        def on_failed(exc_info):
+            msg = QMessageBox(
+                QMessageBox.Critical,
+                "Fail to add application",
+                f"Failed to add application: \n\n{exc_info[0].__name__}: {exc_info[1]}",
+            )
+            msg.setDetailedText("".join(traceback.format_exception(*exc_info)))
+            msg.exec_()
+
+        self.app_progress = QProgressDialog("Installing app", "Cancel", 0, 100)
+
+        self.add_app_thread = _FetchRegistryThread(self, apps=manifests)
+        self.add_app_thread.progress.connect(self.app_progress.setValue)
+        self.add_app_thread.progress.connect(on_progress)
+        self.add_app_thread.items.connect(self.app_progress.setMaximum)
+        self.add_app_thread.label.connect(self.app_progress.setLabelText)
+        self.add_app_thread.failed.connect(on_failed)
+        self.app_progress.canceled.connect(self.add_app_thread.cancel)
+        self.add_app_thread.start()
+
+        self.app_progress.exec_()
 
     def add_app(self, manifest_url: str, manifest: AppManifest):
         appid = app_id(manifest_url)

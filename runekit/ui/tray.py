@@ -52,6 +52,7 @@ class TrayIcon(QSystemTrayIcon):
             app_menu.triggered.connect(
                 lambda _=None, app_id=app_id: self.host.launch_app_id(app_id)
             )
+            app_menu.setToolTip(manifest["description"])
 
             icon = self.host.app_store.icon(app_id)
             if icon:

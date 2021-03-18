@@ -76,6 +76,7 @@ class ApplicationPage(QWidget):
 
         add_button = QPushButton(QIcon.fromTheme("list-add"), "", self)
         add_button.setToolTip("Add application")
+        add_button.clicked.connect(self.on_add)
         buttons.addWidget(add_button)
 
         mkdir_button = QPushButton(QIcon.fromTheme("folder-new"), "", self)
@@ -89,6 +90,16 @@ class ApplicationPage(QWidget):
         buttons.addWidget(delete_button)
 
         layout.addLayout(buttons)
+
+    def on_add(self):
+        dialog = QInputDialog(self)
+        dialog.setLabelText("Enter appconfig.json URL")
+
+        if dialog.exec_() == QInputDialog.Rejected:
+            return
+
+        app_url = dialog.textValue().strip()
+        self.host.app_store.add_app_ui([app_url])
 
     def on_mkdir(self):
         dialog = QInputDialog(self)

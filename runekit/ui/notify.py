@@ -1,6 +1,7 @@
 import abc
 from typing import Union
 
+from PySide2.QtCore import QObject, QSettings
 from PySide2.QtWidgets import QSystemTrayIcon
 
 from .tooltip import TooltipManager
@@ -11,6 +12,11 @@ class Notifier(abc.ABC):
     @abc.abstractmethod
     def notify(self, text: Union[str, None]):
         ...
+
+
+class StubNotifier(Notifier):
+    def notify(self, text):
+        pass
 
 
 class TooltipNotifier(Notifier):
@@ -27,10 +33,12 @@ class TrayIconNotifier(Notifier):
             tray_icon().showMessage("RuneKit", text)
 
 
-class AutoNotifier(Notifier):
+class AutoNotifier(QObject):
     notifier: Notifier
 
     def __init__(self):
+        super().__init__()
+        self.settings = QSettings(self)
         if (
             QSystemTrayIcon.isSystemTrayAvailable()
             and QSystemTrayIcon.supportsMessages()

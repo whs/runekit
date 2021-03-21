@@ -2,7 +2,7 @@ import json
 import sys
 from typing import TYPE_CHECKING
 
-from PySide2.QtCore import QSize, Qt, Slot, QTimer
+from PySide2.QtCore import QSize, Qt, Slot, QTimer, QSettings
 from PySide2.QtGui import QIcon
 from PySide2.QtWidgets import (
     QTabWidget,
@@ -154,11 +154,17 @@ class InterfacePage(QWidget):
     def __init__(self, host: "Host", **kwargs):
         super().__init__(**kwargs)
         self.host = host
+        self.settings = QSettings(self)
         self._layout()
 
     def _layout(self):
         layout = QFormLayout(self)
         self.setLayout(layout)
+
+        layout.addRow(
+            None,
+            QLabel("RuneKit needs to be restarted for changes to take effect", self),
+        )
 
         tooltip_label = QLabel("Display tooltips as", self)
         tooltip_field = QComboBox(self)
@@ -170,21 +176,12 @@ class InterfacePage(QWidget):
 
         border_field = QCheckBox("Styled window border", self)
         border_field.setDisabled(sys.platform == "darwin")
-        border_field.setChecked(sys.platform != "darwin")
+        border_field.setChecked(
+            (self.settings.value("settings/styledBorder", "true") == "true")
+            and sys.platform != "darwin"
+        )
+        border_field.stateChanged.connect(self.on_change_styled_border)
         layout.addRow(None, border_field)
-
-        # I think this doesn't belong to "Interface"
-        # either rename it to settings or make separate game tab
-        capturei_label = QLabel("Capture interval", self)
-        capturei_layout = QHBoxLayout()
-        capturei_field = QSpinBox(self)
-        capturei_field.setRange(100, 2000)
-        capturei_field.setSingleStep(100)
-        capturei_field.setValue(100)
-        capturei_layout.addWidget(capturei_field, 1)
-        capturei_unit = QLabel("ms", self)
-        capturei_layout.addWidget(capturei_unit, 0)
-        layout.addRow(capturei_label, capturei_layout)
 
     @Slot(int)
     def preview_tooltip(self, index: int):
@@ -201,3 +198,8 @@ class InterfacePage(QWidget):
         self._last_notifier = notifier
         notifier.notify("This is an example notification")
         QTimer.singleShot(3000, lambda: notifier.notify(""))
+
+    @Slot(int)
+    def on_change_styled_border(self, state: int):
+        checked = state == Qt.Checked
+        self.settings.setValue("settings/styledBorder", checked)

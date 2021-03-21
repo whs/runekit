@@ -2,7 +2,7 @@ import logging
 import sys
 from typing import Optional
 
-from PySide2.QtCore import QSize, Qt, QThreadPool
+from PySide2.QtCore import QSize, Qt, QThreadPool, QSettings
 from PySide2.QtGui import QIcon
 
 from runekit.app.view.browser_window import BrowserWindow
@@ -13,16 +13,17 @@ class AppWindow(BrowserWindow):
     logger: logging.Logger
     app_icon: Optional[QIcon]
 
-    framed = sys.platform != "darwin"
-
     def __init__(self, **kwargs):
-        # TODO: Hide from taskbar/group this as part of one big window?
-        flags = Qt.NoDropShadowWindowHint | Qt.WindowStaysOnTopHint
+        self.settings = QSettings()
+        super().__init__(**kwargs)
+        self.settings.setParent(self)
 
+        # TODO: Hide from taskbar/group this as part of one big window?
+        flags = Qt.NoDropShadowWindowHint | Qt.WindowStaysOnTopHint | Qt.Window
         if self.framed:
             flags |= Qt.CustomizeWindowHint
+        self.setWindowFlags(flags)
 
-        super().__init__(flags=flags, **kwargs)
         self.pool = QThreadPool(parent=self)
         self.setWindowTitle(self.app.manifest["appName"])
 
@@ -39,6 +40,10 @@ class AppWindow(BrowserWindow):
         self.app_icon = self.app.host.app_store.icon(self.app.app_id)
         if self.app_icon:
             self.setWindowIcon(self.app_icon)
+
+    @property
+    def framed(self) -> bool:
+        return self.settings.value("settings/styledBorder", "true") == "true"
 
     def minimumSize(self) -> QSize:
         return QSize(self.app.manifest["minWidth"], self.app.manifest["minHeight"])

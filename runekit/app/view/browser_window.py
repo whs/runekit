@@ -1,4 +1,5 @@
 import logging
+import sys
 from typing import TYPE_CHECKING
 
 from PySide2.QtCore import Qt, Slot, QRect, QObject, QUrl
@@ -65,7 +66,7 @@ class BrowserWindow(QMainWindow):
         super().__init__(**kwargs)
         self.app = app
 
-        if self.framed:
+        if self.framed and sys.platform != "darwin":
             self.frame = WindowFrame(parent=self)
             self.frame.on_exit.connect(self.close)
             self.setCentralWidget(self.frame)

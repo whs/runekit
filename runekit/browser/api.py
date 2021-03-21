@@ -22,7 +22,6 @@ from PySide2.QtGui import QGuiApplication, QCursor, QScreen
 from PySide2.QtWebChannel import QWebChannel
 from PySide2.QtWebEngineCore import QWebEngineUrlSchemeHandler, QWebEngineUrlRequestJob
 
-from runekit.alt1.schema import CaptureMulti
 from runekit.browser.overlay import OverlayApi
 from runekit.browser.utils import (
     ApiPermissionDeniedException,
@@ -31,7 +30,6 @@ from runekit.browser.utils import (
     decode_image,
 )
 from runekit.game.instance import ImageType
-from runekit.image.np_utils import ensure_np_image, np_crop
 from runekit.ui.tray import tray_icon
 
 if TYPE_CHECKING:

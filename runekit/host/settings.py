@@ -24,7 +24,7 @@ from PySide2.QtWidgets import (
 )
 
 from .appstore_model import AppStoreModel
-from ..ui import TooltipNotifier, TrayIconNotifier
+from ..ui import TooltipNotifier, TrayIconNotifier, AutoNotifier
 
 if TYPE_CHECKING:
     from .host import Host
@@ -168,10 +168,20 @@ class InterfacePage(QWidget):
 
         tooltip_label = QLabel("Display tooltips as", self)
         tooltip_field = QComboBox(self)
-        tooltip_field.insertItem(0, "Disabled")
-        tooltip_field.insertItem(1, "Notification")  # XXX: Check support
-        tooltip_field.insertItem(2, "Cursor tooltip")
+
+        selected = int(
+            self.settings.value("settings/tooltip", AutoNotifier.METHOD_NOTIFICATION)
+        )
+        selected_idx = 0
+        for idx, method in enumerate(AutoNotifier.availableMethods().items()):
+            tooltip_field.insertItem(method[0], method[1])
+            if method[0] == selected:
+                selected_idx = selected_idx
+
+        tooltip_field.setCurrentIndex(selected_idx)
+
         tooltip_field.currentIndexChanged.connect(self.preview_tooltip)
+        tooltip_field.currentIndexChanged.connect(self.on_tooltip_change)
         layout.addRow(tooltip_label, tooltip_field)
 
         border_field = QCheckBox("Styled window border", self)
@@ -185,9 +195,9 @@ class InterfacePage(QWidget):
 
     @Slot(int)
     def preview_tooltip(self, index: int):
-        if index == 1:
+        if index == AutoNotifier.METHOD_NOTIFICATION:
             notifier = TrayIconNotifier()
-        elif index == 2:
+        elif index == AutoNotifier.METHOD_TOOLTIP:
             notifier = TooltipNotifier()
         else:
             return
@@ -198,6 +208,11 @@ class InterfacePage(QWidget):
         self._last_notifier = notifier
         notifier.notify("This is an example notification")
         QTimer.singleShot(3000, lambda: notifier.notify(""))
+
+    @Slot(int)
+    def on_tooltip_change(self, index: int):
+        idx = list(AutoNotifier.availableMethods().items())[index]
+        self.settings.setValue("settings/tooltip", idx[0])
 
     @Slot(int)
     def on_change_styled_border(self, state: int):

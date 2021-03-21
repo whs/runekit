@@ -174,9 +174,9 @@ class InterfacePage(QWidget):
         )
         selected_idx = 0
         for idx, method in enumerate(AutoNotifier.availableMethods().items()):
-            tooltip_field.insertItem(method[0], method[1])
+            tooltip_field.insertItem(idx, method[1])
             if method[0] == selected:
-                selected_idx = selected_idx
+                selected_idx = idx
 
         tooltip_field.setCurrentIndex(selected_idx)
 
@@ -195,9 +195,10 @@ class InterfacePage(QWidget):
 
     @Slot(int)
     def preview_tooltip(self, index: int):
-        if index == AutoNotifier.METHOD_NOTIFICATION:
+        type_ = list(AutoNotifier.availableMethods().items())[index][0]
+        if type_ == AutoNotifier.METHOD_NOTIFICATION:
             notifier = TrayIconNotifier()
-        elif index == AutoNotifier.METHOD_TOOLTIP:
+        elif type_ == AutoNotifier.METHOD_TOOLTIP:
             notifier = TooltipNotifier()
         else:
             return

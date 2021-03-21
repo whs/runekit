@@ -47,7 +47,11 @@ class _FetchRegistryThread(QThread):
         apps: Optional[List[str]] = None,
     ):
         super().__init__(parent=parent)
-        assert not apps_manifest and apps
+        assert (not apps_manifest and apps) or (
+            not apps and apps_manifest
+        ), "One of apps_manifest or apps must be set but not both. apps_manifest={}, apps={}".format(
+            apps_manifest, apps
+        )
 
         self.appstore = parent
         self.apps_manifest = apps_manifest

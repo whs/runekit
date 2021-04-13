@@ -68,7 +68,7 @@ class Host:
 
         if not instance:
             instances = self.manager.get_instances()
-            if not instance:
+            if not instances:
                 QMessageBox.critical(
                     None,
                     "No game instances found",

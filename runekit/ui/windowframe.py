@@ -1,4 +1,4 @@
-from PySide2.QtCore import Signal
+from PySide2.QtCore import Signal, QPoint
 from PySide2.QtGui import QPixmap, Qt, QResizeEvent
 from PySide2.QtWidgets import (
     QWidget,
@@ -65,16 +65,28 @@ class WindowFrame(QWidget):
         if self.shade:
             self.previous_window_geom = self.window().size()
             self.previous_window_min_size = self.window().minimumSize()
+            top_right = self.window().geometry().topRight()
             self._inner.hide()
             self.window().setMinimumSize(self._buttons.sizeHint())
-            self.window().resize(self._buttons.sizeHint())
+
+            size = self._buttons.sizeHint()
+            self.window().resize(size)
+
+            new_top_left = QPoint(top_right)
+            new_top_left.setX(top_right.x() - size.width())
+            self.window().move(new_top_left)
         else:
+            pos = self.window().geometry().topRight()
             self._inner.show()
             if hasattr(self, "previous_window_geom"):
                 self.window().setMinimumSize(self.previous_window_min_size)
-                self.window().resize(self.previous_window_geom)
+                geom = self.previous_window_geom
             else:
-                self.window().resize(self.window().sizeHint())
+                geom = self.window().sizeHint()
+
+            pos.setX(pos.x() - geom.width())
+            self.window().resize(geom)
+            self.window().move(pos)
 
 
 class _FrameInner(QWidget):

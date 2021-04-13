@@ -26,6 +26,7 @@ class AppWindow(BrowserWindow):
 
         self.pool = QThreadPool(parent=self)
         self.setWindowTitle(self.app.manifest["appName"])
+        self.snap_to_game()
 
         self.logger = logging.getLogger(
             __name__

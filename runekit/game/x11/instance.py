@@ -96,7 +96,13 @@ class X11GameInstance(QtGrabMixin, QtEmbedMixin, PsUtilNetStat, GameInstance):
         return self.cached_position
 
     def get_scaling(self) -> float:
-        screen = QGuiApplication.screenAt(self.get_position().topLeft())
+        pos = self.get_position().topLeft()
+        if pos.x() < 0:
+            pos.setX(0)
+        if pos.y() < 0:
+            pos.setY(0)
+
+        screen = QGuiApplication.screenAt(pos)
         return screen.devicePixelRatio()
 
     def is_focused(self) -> bool:

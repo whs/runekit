@@ -179,7 +179,7 @@ class AppStore(QObject):
             manifest["appUrl"] = urljoin(manifest_url, manifest["appUrl"])
             manifest["iconUrl"] = (
                 urljoin(manifest_url, manifest["iconUrl"])
-                if manifest["iconUrl"]
+                if "iconUrl" in manifest and manifest["iconUrl"]
                 else ""
             )
             manifest["configUrl"] = urljoin(manifest_url, manifest["configUrl"])

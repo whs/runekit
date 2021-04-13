@@ -1,6 +1,6 @@
 import time
 from functools import reduce
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Union
 
 import Quartz
 import ApplicationServices
@@ -87,6 +87,12 @@ class QuartzGameManager(GameManager):
                     )
 
         return list(self._instances.values())
+
+    def get_active_instance(self) -> Union[GameInstance, None]:
+        if not self._instances:
+            return None
+
+        return self._instances.values()[0]
 
     def get_instance_by_pid(self, pid: int) -> Optional[QuartzGameInstance]:
         for instance in self._instances.values():

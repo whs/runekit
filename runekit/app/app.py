@@ -27,6 +27,20 @@ class App:
         self.game_instance = game_instance
         self.source_url = source_url
 
+    def close(self):
+        if self.window:
+            self.window.deleteLater()
+            self.window = None
+        if self.alt1api:
+            self.alt1api.deleteLater()
+            self.alt1api = None
+        if self.web_profile:
+            self.web_profile.deleteLater()
+            self.web_profile = None
+
+    def __del__(self):
+        self.close()
+
     def get_window(self, **kwargs) -> AppWindow:
         self.window = AppWindow(app=self, **kwargs)
         self.window.winId()  # force native window

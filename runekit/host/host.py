@@ -1,3 +1,4 @@
+import logging
 from typing import TYPE_CHECKING, List
 
 from PySide2.QtCore import Slot, QCoreApplication
@@ -22,6 +23,7 @@ class Host:
 
     def __init__(self, manager: "GameManager"):
         super().__init__()
+        self.logger = logging.getLogger(__name__ + "." + self.__class__.__name__)
         self.manager = manager
         self.open_app = []
         self.notifier = AutoNotifier()
@@ -33,19 +35,11 @@ class Host:
         QCoreApplication.instance().aboutToQuit.connect(self.on_before_quit)
         self.app_store.app_change.connect(self.tray_icon.update_menu)
         self.tray_icon.on_settings.connect(self.open_settings)
+        self.manager.instance_removed.connect(self.on_game_quit)
 
     def on_before_quit(self):
         for app in self.open_app:
-            # FIXME: Why app don't cleanup after themselves?
-            if app.window:
-                app.window.deleteLater()
-                app.window = None
-            if app.alt1api:
-                app.alt1api.deleteLater()
-                app.alt1api = None
-            if app.web_profile:
-                app.web_profile.deleteLater()
-                app.web_profile = None
+            app.close()
 
     def __del__(self):
         self.open_app = []
@@ -70,21 +64,25 @@ class Host:
         self.launch_app(appid, manifest)
 
     def launch_app(self, appid: str, manifest: AppManifest):
-        instances = self.manager.get_instances()
+        instance = self.manager.get_active_instance()
 
-        if len(instances) == 0:
-            QMessageBox.critical(
-                None,
-                "No game instances found",
-                "Cannot find open RuneScape window. Please launch the game before any apps",
-            )
-            return
+        if not instance:
+            instances = self.manager.get_instances()
+            if not instance:
+                QMessageBox.critical(
+                    None,
+                    "No game instances found",
+                    "Cannot find open RuneScape window. Please launch the game before any apps",
+                )
+                return
+
+            instance = instances[0]
 
         app = App(
             host=self,
             app_id=appid,
             manifest=manifest,
-            game_instance=instances[0],
+            game_instance=instance,
             source_url=manifest["configUrl"],
         )
 
@@ -104,3 +102,15 @@ class Host:
     def open_settings(self):
         self.setting_dialog.show()
         self.setting_dialog.raise_()
+
+    @Slot()
+    def on_game_quit(self, instance: "GameInstance"):
+        self.logger.info("Game instance is closing")
+        for app in self.open_app[:]:
+            if app.game_instance == instance:
+                self.logger.debug(
+                    "Closing app window %s because instance is closing",
+                    app.manifest["appName"],
+                )
+                app.close()
+            self.open_app.remove(app)

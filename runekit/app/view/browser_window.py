@@ -8,6 +8,7 @@ from PySide2.QtWebEngineWidgets import QWebEngineView, QWebEnginePage
 from PySide2.QtWidgets import QMainWindow
 
 from runekit.browser import Alt1WebChannel
+from runekit.ui.game_snap import GameSnapMixin
 from runekit.ui.windowframe import WindowFrame
 
 if TYPE_CHECKING:
@@ -56,7 +57,7 @@ class PageClass(QWebEnginePage):
         return super().acceptNavigationRequest(url, type_, is_main_frame)
 
 
-class BrowserWindow(QMainWindow):
+class BrowserWindow(GameSnapMixin, QMainWindow):
     app: "App"
     browser: QWebEngineView
     page_class = PageClass
@@ -127,16 +128,6 @@ class BrowserWindow(QMainWindow):
             self.browser.page().setFeaturePermission(
                 origin, feature, QWebEnginePage.PermissionDeniedByUser
             )
-
-    def snap_to_game(self):
-        rect = self.app.game_instance.get_position()
-        pos = rect.topLeft()
-        if pos.x() < 0:
-            pos.setX(0)
-        if pos.y() < 0:
-            pos.setY(0)
-
-        self.move(pos)
 
 
 class BrowserView(QWebEngineView):

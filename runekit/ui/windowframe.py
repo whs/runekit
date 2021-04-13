@@ -18,6 +18,7 @@ class WindowFrame(QWidget):
     on_exit = Signal()
 
     content: QWidget
+    shade = False
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -28,6 +29,7 @@ class WindowFrame(QWidget):
         self._inner = _FrameInner(parent=self)
         self._buttons = _WindowButtons(parent=self)
         self._buttons.on_minimize.connect(self.on_minimize)
+        self._buttons.on_minimize.connect(self.handle_shade)
         self._buttons.on_settings.connect(self.on_settings)
         self._buttons.on_exit.connect(self.on_exit)
 
@@ -50,6 +52,29 @@ class WindowFrame(QWidget):
     def set_content(self, content: QWidget):
         self._inner.set_content(content)
         self.content = content
+
+    def handle_shade(self):
+        self.set_shade(not self.shade)
+
+    def set_shade(self, shade: bool):
+        if shade == self.shade:
+            return
+
+        self.shade = shade
+
+        if self.shade:
+            self.previous_window_geom = self.window().size()
+            self.previous_window_min_size = self.window().minimumSize()
+            self._inner.hide()
+            self.window().setMinimumSize(self._buttons.sizeHint())
+            self.window().resize(self._buttons.sizeHint())
+        else:
+            self._inner.show()
+            if hasattr(self, "previous_window_geom"):
+                self.window().setMinimumSize(self.previous_window_min_size)
+                self.window().resize(self.previous_window_geom)
+            else:
+                self.window().resize(self.window().sizeHint())
 
 
 class _FrameInner(QWidget):
@@ -138,12 +163,12 @@ class _WindowButtons(QWidget):
         )
         layout.addWidget(minimize_button, alignment=Qt.AlignTop)
 
-        settings_button = QPushButton(self)
-        settings_button.clicked.connect(self.on_settings)
-        settings_button.setStyleSheet(
-            self.button_style("settings.png", "settingsHover.png")
-        )
-        layout.addWidget(settings_button, alignment=Qt.AlignTop)
+        # settings_button = QPushButton(self)
+        # settings_button.clicked.connect(self.on_settings)
+        # settings_button.setStyleSheet(
+        #     self.button_style("settings.png", "settingsHover.png")
+        # )
+        # layout.addWidget(settings_button, alignment=Qt.AlignTop)
 
         exit_button = QPushButton(self)
         exit_button.clicked.connect(self.on_exit)

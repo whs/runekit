@@ -68,9 +68,12 @@ class X11GameManager(GameManager):
                     instance = X11GameInstance(self, wid, parent=self)
                     self._instances[wid] = instance
 
-            query = self.connection.core.QueryTree(wid).reply()
-            for child in query.children:
-                visit(child)
+            try:
+                query = self.connection.core.QueryTree(wid).reply()
+                for child in query.children:
+                    visit(child)
+            except xcffib.xproto.WindowError:
+                return
 
         visit(self.screen.root)
 
@@ -177,13 +180,6 @@ class X11GameManager(GameManager):
 
     @Slot(xcffib.Event)
     def on_game_opened(self, evt: xcffib.xproto.CreateNotifyEvent):
-        if evt.window in self._instances:
-            return
-
-        # At this point we aren't sure if it's actually the game...
-        if not self.is_game(evt.window):
-            return
-
         self.logger.info("New game window opened %d", evt.window)
         self._instances[evt.window] = X11GameInstance(self, evt.window, parent=self)
 
@@ -283,6 +279,13 @@ class X11EventWorker(QObject):
             pass
 
     def on_create(self, evt: xcffib.xproto.CreateNotifyEvent):
+        if evt.window in self.manager._instances:
+            return
+
+        # At this point we aren't sure if it's actually the game...
+        if not self.manager.is_game(evt.window):
+            return
+
         self.create_signal.emit(evt)
 
     def on_destroy(self, evt: xcffib.xproto.DestroyNotifyEvent):

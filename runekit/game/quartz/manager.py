@@ -61,9 +61,14 @@ class QuartzGameManager(GameManager):
 
     def _setup_overlay(self):
         self.overlay = DesktopWideOverlay()
+
+        def start():
+            self.overlay.show()
+            self.overlay.check_compatibility()
+
         # Seems like QGraphicsView has a delay before applying stylesheet
         # Put some delay to allow it to initialize and not flash
-        QTimer.singleShot(1000, lambda: self.overlay.show())
+        QTimer.singleShot(1000, start)
 
     def stop(self):
         try:

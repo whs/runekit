@@ -111,6 +111,7 @@ class X11GameManager(GameManager):
     def _setup_overlay(self):
         self.overlay = DesktopWideOverlay()
         self.overlay.show()
+        self.overlay.check_compatibility()
 
     def _setup_composite(self):
         self.xcomposite.QueryVersion(0, 4, is_checked=True)

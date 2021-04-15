@@ -13,6 +13,7 @@ from PySide2.QtWidgets import (
 )
 
 from .qt import qpixmap_to_np
+from ..image import is_color_percent_gte
 
 if TYPE_CHECKING:
     from .instance import GameInstance
@@ -102,14 +103,6 @@ class DesktopWideOverlay(QMainWindow):
         # If we cause black screen then hide ourself out of shame...
         screenshot = QGuiApplication.primaryScreen().grabWindow(0)
         image = qpixmap_to_np(screenshot)
-        black_pixels = np.count_nonzero(np.all(image[:, :, :3] == [0, 0, 0], axis=-1))
-        total_pixels = len(image[:, :, 0].flatten())
-        black_percent = black_pixels / total_pixels
-
-        self.logger.debug("Screen black ratio %.2f%%", black_percent * 100)
-        if black_percent > 0.95:
-            self.logger.warning(
-                "Detected black screen at %.2f%%. Disabling overlay",
-                black_percent * 100,
-            )
-        self.hide()
+        if is_color_percent_gte(image, color=[0, 0, 0], percent=0.95):
+            self.logger.warning("Detected black screen condition. Disabling overlay")
+            self.hide()

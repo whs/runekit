@@ -9,7 +9,7 @@ from PySide2.QtGui import QWindow, QGuiApplication
 from PySide2.QtWidgets import QGraphicsItem
 
 from runekit.game.instance import GameInstance
-from runekit.game.psutil import PsUtilNetStat
+from runekit.game.psutil_mixins import PsUtilNetStat
 from runekit.game.qt import QtGrabMixin, QtEmbedMixin
 from .ximage import zpixmap_shm_to_image
 
@@ -31,6 +31,7 @@ class X11GameInstance(QtGrabMixin, QtEmbedMixin, PsUtilNetStat, GameInstance):
 
     input_signal = Signal(xcffib.Event)
     config_signal = Signal(xcffib.Event)
+    destroy_signal = Signal(xcffib.Event)
 
     def __init__(self, manager: "X11GameManager", wid: int, **kwargs):
         super().__init__(**kwargs)
@@ -53,7 +54,7 @@ class X11GameInstance(QtGrabMixin, QtEmbedMixin, PsUtilNetStat, GameInstance):
             self.wid, xcffib.composite.Redirect.Automatic
         )
         self.name_pixmap()
-        self.manager.connection.core.ChangeWindowAttributes(
+        self.manager.connection.core.ChangeWindowAttributesChecked(
             self.wid,
             xcffib.xproto.CW.EventMask,
             [
@@ -96,14 +97,20 @@ class X11GameInstance(QtGrabMixin, QtEmbedMixin, PsUtilNetStat, GameInstance):
         return self.cached_position
 
     def get_scaling(self) -> float:
-        screen = QGuiApplication.screenAt(self.get_position().topLeft())
+        pos = self.get_position().topLeft()
+        if pos.x() < 0:
+            pos.setX(0)
+        if pos.y() < 0:
+            pos.setY(0)
+
+        screen = QGuiApplication.screenAt(pos)
         return screen.devicePixelRatio()
 
     def is_focused(self) -> bool:
-        return self.is_focused
+        return self._is_focused
 
     def _update_is_focused(self):
-        self.is_focused = self.manager.get_active_window() == self.wid
+        self._is_focused = self.manager.get_active_window() == self.wid
 
     def set_taskbar_progress(self, type_, progress):
         # TODO: Implement this on Unity? I don't use Unity

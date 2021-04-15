@@ -1,5 +1,5 @@
 import abc
-from typing import List
+from typing import List, Union
 
 from PySide2.QtCore import QObject, Property, Signal
 
@@ -12,8 +12,12 @@ class GameManager(QObject):
         """Return a list of active game instance. The instances returned should be stable (same instance for all invocation)"""
         ...
 
-    instance_added = Signal()
-    instance_removed = Signal()
+    @abc.abstractmethod
+    def get_active_instance(self) -> Union[GameInstance, None]:
+        ...
+
+    instance_added = Signal(GameInstance)
+    instance_removed = Signal(GameInstance)
     instance_changed = Signal()
     instances = Property(list, get_instances, notify=instance_changed)
 

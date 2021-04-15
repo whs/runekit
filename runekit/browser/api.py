@@ -31,7 +31,7 @@ from runekit.browser.utils import (
     decode_image,
 )
 from runekit.game.instance import ImageType
-from runekit.image.cv import find_subimages
+from runekit.image import find_subimages
 from runekit.image.np_utils import ensure_np_image, np_crop
 from runekit.ui.tray import tray_icon
 
@@ -71,8 +71,10 @@ class Alt1Api(QObject):
 
         self.rpc_funcs = {
             "getRegion": self.get_region,
+            "getRegionRaw": self.get_region_raw,
             "bindRegion": self.bind_region,
             "bindGetRegion": self.bind_get_region,
+            "bindGetRegionRaw": self.bind_get_region_raw,
             "bindFindSubImg": self.bind_find_subimage,
         }
 
@@ -207,7 +209,17 @@ class Alt1Api(QObject):
         if not self.app.has_permission("pixel"):
             raise ApiPermissionDeniedException("pixel")
 
-        return image_to_stream(self.app.game_instance.grab_region(x, y, w, h))
+        return base64.b64encode(
+            image_to_stream(self.app.game_instance.grab_region(x, y, w, h))
+        )
+
+    def get_region_raw(self, x, y, w, h):
+        if not self.app.has_permission("pixel"):
+            raise ApiPermissionDeniedException("pixel")
+
+        return image_to_stream(
+            self.app.game_instance.grab_region(x, y, w, h), mode="rgba"
+        )
 
     def bind_region(self, x, y, w, h):
         if not self.app.has_permission("pixel"):
@@ -231,7 +243,22 @@ class Alt1Api(QObject):
             self.logger.warning("bindGetRegion(%d) but image not bound", id)
             return ""
 
-        return image_to_stream(image.image, x, y, w, h)
+        return base64.b64encode(image_to_stream(image.image, x, y, w, h))
+
+    def bind_get_region_raw(self, id, x, y, w, h):
+        if not self.app.has_permission("pixel"):
+            raise ApiPermissionDeniedException("pixel")
+
+        if id == 0:
+            return ""
+
+        try:
+            image = self._bound_regions[id - 1]
+        except IndexError:
+            self.logger.warning("bindGetRegionRaw(%d) but image not bound", id)
+            return ""
+
+        return image_to_stream(image.image, x, y, w, h, mode="rgba")
 
     def bind_find_subimage(
         self, id: int, subimg: str, img_width: int, x: int, y: int, w: int, h: int

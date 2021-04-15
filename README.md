@@ -7,14 +7,39 @@ Alt1-compatible toolbox for RuneScape 3, for Linux and macOS.
 * [Compatibility](https://github.com/whs/runekit/wiki/App-Compatibility)
 * [macOS installation guide](docs/macos-setup.md)
 
-## Running
+## Installing
+
+### Linux
+
+1. [Download RuneKit.AppImage](https://github.com/whs/runekit/releases/tag/continuous)
+2. Mark file as executable (`chmod +x`)
+3. Start the game
+4. Run `RuneKit.AppImage`.
+   - On first start it will download app list
+5. Right click the tray icon and start any application
+
+### macOS
+
+See developer guide in the next section.
+
+You will need to add Python in System Preferences > Security > Privacy in these sections:
+
+- Accessibility
+- Screen Recording
+
+Note that Python might appear as the closest macOS application (eg. your terminal emulator) instead of Python
+
+## Troubleshooting
+
+[See wiki](https://github.com/whs/runekit/wiki/Troubleshooting)
+
+## Developer
 
 This project use [Poetry](https://python-poetry.org) as package manager.
 
 Requires Poetry 1.1.
 
 ```sh
-# Try this first
 poetry install
 # If previous fails and you're on Big Sur, try this instead
 SYSTEM_VERSION_COMPAT=1 poetry install
@@ -26,21 +51,6 @@ poetry run python main.py https://runeapps.org/apps/alt1/afkscape/appconfig.json
 # If you'd like to pick what app you load
 poetry run python main.py
 ```
-
-### Linux additional instruction
-
-Requires libxcb to be installed
-
-### macOS additional instruction
-
-You will need to add Python in System Preferences > Security > Privacy in these sections:
-
-- Accessibility
-- Screen Recording
-
-Note that Python might appear as the closest macOS application (eg. your terminal emulator) instead of Python
-
-## Developer
 
 Start with `--remote-debugging-port=9222` to enable remote debugger protocol.
 To debug, go to `chrome://inspect` on Chrome/Chromium.

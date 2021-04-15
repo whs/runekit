@@ -41,9 +41,17 @@ Packages related to Alt1 app.
 
 ## UI
 
-- host: Main window of RuneKit
+- host: RuneKit Qt root
 - ui: Collection of UI tools
 
 ## Porting
 
 With this design it should be simple to port RuneKit to any platform supported by Qt by just reimplementing `game` for that platform
+
+# Settings design
+- apps/
+  - <b2b size 16 of manifest url> (json): App manifest
+  - _folder
+    - <folder name>/0 (str): App ID
+  - _meta
+    - isDefaultLoaded (bool): Has default apps list downloaded

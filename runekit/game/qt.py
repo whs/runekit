@@ -12,7 +12,7 @@ _debug_dump_file = False
 logger = logging.getLogger(__name__)
 
 
-def qpixmap_to_np(im: QPixmap):
+def qpixmap_to_np(im: QPixmap) -> np.ndarray:
     # from PIL.ImageQt.fromqimage
     buffer = QBuffer()
     buffer.open(QIODevice.ReadWrite)

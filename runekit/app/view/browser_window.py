@@ -1,4 +1,5 @@
 import logging
+import sys
 from typing import TYPE_CHECKING
 
 from PySide2.QtCore import Qt, Slot, QRect, QObject, QUrl
@@ -7,6 +8,7 @@ from PySide2.QtWebEngineWidgets import QWebEngineView, QWebEnginePage
 from PySide2.QtWidgets import QMainWindow
 
 from runekit.browser import Alt1WebChannel
+from runekit.ui.game_snap import GameSnapMixin
 from runekit.ui.windowframe import WindowFrame
 
 if TYPE_CHECKING:
@@ -55,7 +57,7 @@ class PageClass(QWebEnginePage):
         return super().acceptNavigationRequest(url, type_, is_main_frame)
 
 
-class BrowserWindow(QMainWindow):
+class BrowserWindow(GameSnapMixin, QMainWindow):
     app: "App"
     browser: QWebEngineView
     page_class = PageClass
@@ -65,7 +67,8 @@ class BrowserWindow(QMainWindow):
         super().__init__(**kwargs)
         self.app = app
 
-        if self.framed:
+        if self.framed and sys.platform != "darwin":
+            self.setAttribute(Qt.WA_TranslucentBackground)
             self.frame = WindowFrame(parent=self)
             self.frame.on_exit.connect(self.close)
             self.setCentralWidget(self.frame)

@@ -40,9 +40,19 @@
         }
     });
 
+    function str2ab(str) {
+        let buf = new ArrayBuffer(str.length);
+        let bufView = new Uint8ClampedArray(buf);
+        for (let i=0, strLen=str.length; i < strLen; i++) {
+            bufView[i] = str.charCodeAt(i) & 0xFF;
+        }
+        return bufView;
+    }
+
     function syncRpc(msg, json) {
         let xhr = new XMLHttpRequest();
         xhr.open('GET', 'rk:' + JSON.stringify(msg), false); // sync xhr
+        xhr.overrideMimeType('text/plain; charset=x-user-defined');
         xhr.setRequestHeader('token', RPC_TOKEN);
         xhr.send(null);
 
@@ -50,6 +60,25 @@
             return JSON.parse(xhr.responseText);
         }
         return xhr.responseText;
+    }
+
+    function asyncRpc(msg, responseType='') {
+        return new Promise((resolve, reject) => {
+            let xhr = new XMLHttpRequest();
+            xhr.open('GET', 'rk:' + JSON.stringify(msg));
+            xhr.setRequestHeader('token', RPC_TOKEN);
+            xhr.responseType = responseType;
+            xhr.addEventListener('load', (e) => {
+                resolve(xhr.response);
+            });
+            xhr.addEventListener('error' ,(e) => {
+                e.xhr = xhr;
+                reject(e);
+            });
+            xhr.send();
+
+            return xhr.response;
+        })
     }
 
     function emit(param){
@@ -320,9 +349,31 @@
         // bindGetPixel(id, x, y) {
         //     return -1;
         // },
-        // bindFindSubImg(id, imgstr, imgwidth, x, y, w, h) {
-        //     return syncRpc({func: 'bindFindSubImg', id: id, subimg: imgstr, img_width: imgwidth, x: x, y: y, w: w, h: h});
-        // },
+        bindFindSubImg(id, imgstr, imgwidth, x, y, w, h) {
+            return syncRpc({func: 'bindFindSubImg', id: id, subimg: imgstr, img_width: imgwidth, x: x, y: y, w: w, h: h});
+        },
+        capture(x, y, w, h) {
+            let data = syncRpc({func: 'getRegionRaw', x: x, y: y, w: w, h: h});
+            return str2ab(data);
+        },
+        captureAsync(x, y, w, h) {
+            return asyncRpc({func: 'getRegionRaw', x: x, y: y, w: w, h: h}, 'arraybuffer')
+                .then((data) => new Uint8ClampedArray(data));
+        },
+        async captureMultiAsync(areas) {
+            // XXX: This override the current bind
+            let boundId = await asyncRpc({func: 'bindRegion', x: 0, y: 0, w: alt1.rsWidth, h: alt1.rsHeight}, 'json');
+            let bounds = await Promise.all(Object.keys(areas).map((area) => {
+                let value = areas[area];
+                return asyncRpc({func: 'bindGetRegionRaw', id: boundId, x: value.x, y: value.y, w: value.width, h: value.height}, 'arraybuffer')
+                    .then((data) => ({[area]: new Uint8ClampedArray(data)}));
+            }));
+            return bounds.reduce((a, b) => ({...a, ...b}));
+        },
+        bindGetRegionBuffer(id, x, y, w, h) {
+            let data = syncRpc({func: 'bindGetRegionRaw', id: id, x: x, y: y, w: w, h: h});
+            return str2ab(data);
+        },
         addOCRFont(){
         },
     };

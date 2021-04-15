@@ -13,17 +13,33 @@ if TYPE_CHECKING:
 class App:
     host: "Host"
     manifest: AppManifest
+    app_id: str
     game_instance: "GameInstance"
     source_url: Optional[str]
     window: Optional[AppWindow] = None
     alt1api: Optional[Alt1Api] = None
     web_profile: Optional[WebProfile] = None
 
-    def __init__(self, host, manifest, game_instance, source_url=None):
+    def __init__(self, host, app_id, manifest, game_instance, source_url=None):
         self.host = host
+        self.app_id = app_id
         self.manifest = manifest
         self.game_instance = game_instance
         self.source_url = source_url
+
+    def close(self):
+        if self.window:
+            self.window.deleteLater()
+            self.window = None
+        if self.alt1api:
+            self.alt1api.deleteLater()
+            self.alt1api = None
+        if self.web_profile:
+            self.web_profile.deleteLater()
+            self.web_profile = None
+
+    def __del__(self):
+        self.close()
 
     def get_window(self, **kwargs) -> AppWindow:
         self.window = AppWindow(app=self, **kwargs)
@@ -51,6 +67,7 @@ class App:
 
     @property
     def absolute_app_url(self) -> str:
+        # TODO: Remove
         if self.source_url:
             return urljoin(self.source_url, self.manifest["appUrl"])
 
@@ -58,6 +75,7 @@ class App:
 
     @property
     def absolute_config_url(self) -> str:
+        # TODO: Remove
         if self.source_url:
             return urljoin(self.source_url, self.manifest["configUrl"])
 
@@ -65,6 +83,7 @@ class App:
 
     @property
     def absolute_icon_url(self) -> Optional[str]:
+        # TODO: Remove
         if self.source_url and "iconUrl" in self.manifest:
             return urljoin(self.source_url, self.manifest["iconUrl"])
 

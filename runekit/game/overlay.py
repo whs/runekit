@@ -1,6 +1,8 @@
+import logging
 from typing import TYPE_CHECKING, Callable, Tuple, Dict
 
-from PySide2.QtCore import Qt, QRect
+import numpy as np
+from PySide2.QtCore import Qt, QRect, QTimer
 from PySide2.QtGui import QGuiApplication, QPen
 from PySide2.QtWidgets import (
     QMainWindow,
@@ -9,6 +11,9 @@ from PySide2.QtWidgets import (
     QGraphicsItem,
     QGraphicsRectItem,
 )
+
+from .qt import qpixmap_to_np
+from ..image import is_color_percent_gte
 
 if TYPE_CHECKING:
     from .instance import GameInstance
@@ -27,9 +32,11 @@ class DesktopWideOverlay(QMainWindow):
             | Qt.WindowTransparentForInput
             | Qt.WindowStaysOnTopHint
         )
+        self.logger = logging.getLogger(__name__ + "." + self.__class__.__name__)
         self.setAttribute(Qt.WA_NoSystemBackground, True)
         self.setAttribute(Qt.WA_TranslucentBackground, True)
         self.setAttribute(Qt.WA_DeleteOnClose, True)
+        self.setStyleSheet("background: transparent")
         self._instances = {}
 
         virtual_screen = QRect(0, 0, 0, 0)
@@ -88,3 +95,14 @@ class DesktopWideOverlay(QMainWindow):
         rect = self._instances[instance.wid]
         rect.setRect(0, 0, pos.width(), pos.height())
         rect.setPos(pos.x(), pos.y())
+
+    def check_compatibility(self):
+        QTimer.singleShot(300, self._check_compatibility)
+
+    def _check_compatibility(self):
+        # If we cause black screen then hide ourself out of shame...
+        screenshot = QGuiApplication.primaryScreen().grabWindow(0)
+        image = qpixmap_to_np(screenshot)
+        if is_color_percent_gte(image, color=[0, 0, 0], percent=0.95):
+            self.logger.warning("Detected black screen condition. Disabling overlay")
+            self.hide()

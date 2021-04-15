@@ -8,7 +8,7 @@ from PySide2.QtCore import QObject, Signal, Property, QRect, Slot
 from PySide2.QtGui import QWindow
 from PySide2.QtWidgets import QGraphicsItem
 
-from ..image.np_utils import np_crop
+from runekit.image.np_utils import np_crop
 
 if TYPE_CHECKING:
     from .manager import GameManager
@@ -68,7 +68,7 @@ class GameInstance(QObject):
     world = Property(int, get_world, notify=worldChanged)
 
     @abc.abstractmethod
-    def grab_game(self) -> Union[Image.Image, np.ndarray]:
+    def grab_game(self) -> ImageType:
         ...
 
     @abc.abstractmethod

@@ -1,17 +1,44 @@
-dev: runekit/_resources.py
+LINUXDEPLOY ?= linuxdeploy-$(shell uname -m).AppImage
 
-dist/runekit.tar.gz: main.py poetry.lock $(wildcard runekit/**/*)
-	poetry build -f sdist
-	cd dist; cp runekit-*.tar.gz runekit.tar.gz
+dev: runekit/_resources.py
 
 runekit/_resources.py: resources.qrc $(wildcard runekit/**/*.js) $(wildcard runekit/**/*.png)
 	pyside2-rcc $< -o $@
 
-dist/RuneKitApp.app: main.py poetry.lock $(wildcard runekit/**/*)
+# Sdist
+
+dist/runekit.tar.gz: main.py poetry.lock runekit/_resources.py $(wildcard runekit/**/*)
+	poetry build -f sdist
+	cd dist; cp runekit-*.tar.gz runekit.tar.gz
+
+# Mac
+
+dist/RuneKitApp.app: main.py poetry.lock runekit/_resources.py $(wildcard runekit/**/*)
 	pyinstaller -w -n RuneKitApp \
 		--exclude-module tkinter \
 		-s -d noarchive \
 		--osx-bundle-identifier de.cupco.runekit \
 		$<
+
+# AppImage
+
+build/python3.9.1.AppImage:
+	mkdir build || true
+	wget https://github.com/niess/python-appimage/releases/download/python3.9/python3.9.1-cp39-cp39-manylinux1_x86_64.AppImage -O "$@"
+	chmod +x "$@"
+
+build/appdir: build/python3.9.1.AppImage
+	$< --appimage-extract
+	mv squashfs-root build/appdir
+
+dist/RuneKit.AppImage: dist/runekit.tar.gz build/appdir deploy/runekit-appimage.sh
+	build/appdir/usr/bin/python3 -m pip install dist/runekit.tar.gz
+	rm $(wildcard build/appdir/*.desktop) $(wildcard build/appdir/usr/share/applications/*.desktop) $(wildcard build/appdir/usr/share/metainfo/*)
+	cp deploy/RuneKit.desktop build/appdir/
+	cp deploy/RuneKit.desktop build/appdir/usr/share/applications/
+	cp deploy/RuneKit.appdata.xml build/appdir/usr/share/metainfo/
+	cp deploy/runekit-appimage.sh build/appdir/AppRun
+	$(LINUXDEPLOY) --appdir build/appdir --output appimage
+	cp RuneKit-*.AppImage "$@"
 
 .PHONY: dev

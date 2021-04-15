@@ -495,7 +495,7 @@ class RuneKitRequestProcess(QRunnable):
 
             func = data["func"]
             del data["func"]
-            self.handler.logger.debug("RPC: %s(%s)", func, repr(data))
+            self.handler.logger.debug("RPC: %s(%s)", func, repr(data)[:300])
 
             out = self.handler.api.rpc_funcs[func](**data)
 

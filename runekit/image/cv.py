@@ -16,7 +16,7 @@ def find_subimages(image: np.ndarray, subimage: np.ndarray) -> List[Tuple[int, i
     mask = subimage[:, :, 3]
     image_bgr = image[:, :, :3]
     subimage_bgr = subimage[:, :, :3]
-    matched = cv2.matchTemplate(image_bgr, subimage_bgr, cv2.TM_SQDIFF, mask=mask).get()
+    matched = cv2.matchTemplate(image_bgr, subimage_bgr, cv2.TM_SQDIFF, mask=mask)
 
     # allow up to 30 pixel per pixel
     threshold = (30 ** 2) * subimage.shape[0] * subimage.shape[1]

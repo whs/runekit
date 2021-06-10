@@ -368,7 +368,7 @@
                 return asyncRpc({func: 'bindGetRegionRaw', id: boundId, x: value.x, y: value.y, w: value.width, h: value.height}, 'arraybuffer')
                     .then((data) => ({[area]: new Uint8ClampedArray(data)}));
             }));
-            return bounds.reduce((a, b) => ({...a, ...b}));
+            return bounds.reduce((a, b) => ({...a, ...b}), {});
         },
         bindGetRegionBuffer(id, x, y, w, h) {
             let data = syncRpc({func: 'bindGetRegionRaw', id: id, x: x, y: y, w: w, h: h});

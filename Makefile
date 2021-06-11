@@ -22,12 +22,12 @@ dist/RuneKitApp.app: main.py poetry.lock runekit/_resources.py $(wildcard runeki
 
 # AppImage
 
-build/python3.9.1.AppImage:
+build/python3.9.5.AppImage:
 	mkdir build || true
-	wget https://github.com/niess/python-appimage/releases/download/python3.9/python3.9.1-cp39-cp39-manylinux1_x86_64.AppImage -O "$@"
+	wget https://github.com/niess/python-appimage/releases/download/python3.9/python3.9.5-cp39-cp39-manylinux1_x86_64.AppImage -O "$@"
 	chmod +x "$@"
 
-build/appdir: build/python3.9.1.AppImage
+build/appdir: build/python3.9.5.AppImage
 	$< --appimage-extract
 	mv squashfs-root build/appdir
 

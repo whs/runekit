@@ -385,6 +385,7 @@
 
             if(active){
                 emit({eventName: 'rsfocus'});
+                lastGameActivity = window.performance.now();
             }else{
                 emit({eventName: 'rsblur'});
             }

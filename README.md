@@ -22,7 +22,7 @@ Alt1-compatible toolbox for RuneScape 3, for Linux and macOS.
 
 1. [Download RuneKit.app](https://github.com/whs/runekit/releases) and unzip
 2. Double click it
-  - The first launch may takes a few minutes while macOS verify the application's security (we shipped a bunch of unused libraries - it is harder to remove them than to just ship it). The dock icon will keep bouncing while this is in progress
+   - The first launch may takes a few minutes while macOS verify the application's security (we shipped a bunch of unused libraries - it is harder to remove them than to just ship it). The dock icon will keep bouncing while this is in progress
 3. If permission prompt appears, grant it in System Preferences > Security. **Then quit RuneKit (right click dock icon > force quit) and start it again.** Don't quit RuneKit while it is downloading app list! The list of permissions are:
    - Accessibility - for access to game window
    - Input Monitoring - for hooking alt+1 and idle detection

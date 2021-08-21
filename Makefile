@@ -13,12 +13,15 @@ dist/runekit.tar.gz: main.py poetry.lock runekit/_resources.py $(wildcard runeki
 
 # Mac
 
-dist/RuneKit.app: main.py poetry.lock runekit/_resources.py $(wildcard runekit/**/*)
+dist/RuneKit.app: RuneKit.spec main.py poetry.lock runekit/_resources.py $(wildcard runekit/**/*)
 	pyinstaller -w -n RuneKitApp --noconfirm \
 		--exclude-module tkinter \
 		-s -d noarchive \
 		--osx-bundle-identifier de.cupco.runekit \
-		RuneKit.spec
+		$<
+
+dist/RuneKit.app.zip: dist/RuneKit.app
+	cd dist; zip -r -9 RuneKit.app.zip RuneKit.app
 
 # AppImage
 

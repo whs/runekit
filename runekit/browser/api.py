@@ -254,7 +254,7 @@ class Alt1Api(QObject):
             self.logger.warning("bindGetRegionRaw(%d) but image not bound", id)
             return ""
 
-        return image_to_stream(image.image, x, y, w, h, mode="rgba")
+        return image_to_stream(image.image, x, y, w, h, mode="rgba", ignore_limit=True)
 
     # endregion
 

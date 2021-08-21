@@ -1,3 +1,4 @@
+import sys
 import collections
 import functools
 import hashlib
@@ -224,6 +225,10 @@ class OverlayApi(QObject):
     ):
         gfx = QGraphicsTextItem(message)
         gfx.setDefaultTextColor(decode_color(color))
+
+        if font_name == "" and sys.platform == "darwin":
+            # Don't use Helvetica on Mac
+            font_name = "Verdana"
 
         font = QFont(font_name, min(50, size))
         font.setStyleHint(QFont.SansSerif)

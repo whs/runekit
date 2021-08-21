@@ -65,6 +65,7 @@ def image_to_stream(
     width=None,
     height=None,
     mode="bgra",
+    ignore_limit=False,
 ) -> bytes:
     if isinstance(image, np.ndarray):
         out = np_crop(image, x, y, width, height)
@@ -77,7 +78,7 @@ def image_to_stream(
         if height is None:
             height = image.height
 
-        if width * height * 4 > TRANSFER_LIMIT:
+        if not ignore_limit and width * height * 4 > TRANSFER_LIMIT:
             return ""
 
         image = image.crop((x, y, x + width, y + height))

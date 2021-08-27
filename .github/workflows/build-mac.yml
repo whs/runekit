@@ -1,8 +1,8 @@
-name: AppImage
+name: Mac
 on: [push]
 jobs:
   build:
-    runs-on: ubuntu-18.04 # Leave this on the earliest supported OS!
+    runs-on: macos-11
     steps:
       - uses: actions/checkout@v2
       - uses: actions/cache@v2
@@ -15,18 +15,14 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.9
-      - name: Get linuxdeploy
-        run: |
-          wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage -O linuxdeploy.AppImage
-          chmod +x linuxdeploy.AppImage
       - name: Install dependencies
         run: |
           python -m pip install poetry
           poetry install
       - name: Build resources
         run: poetry run make runekit/_resources.py
-      - name: Build AppImage
-        run: LINUXDEPLOY=./linuxdeploy.AppImage make dist/RuneKit.AppImage
+      - name: Build app
+        run: make dist/RuneKit.app.zip
 
       # Deploy
       - name: Upload to CI
@@ -38,8 +34,7 @@ jobs:
           name: Continuous Integration
           body: These files are automatically built with GitHub Actions from the master branch.
           files: |
-            dist/RuneKit.AppImage
-            dist/runekit.tar.gz
+            dist/RuneKit.app.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload to CI
@@ -47,7 +42,6 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
-            dist/RuneKit.AppImage
-            dist/runekit.tar.gz
+            dist/RuneKit.app.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

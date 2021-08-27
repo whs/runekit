@@ -22,7 +22,7 @@ jobs:
       - name: Build resources
         run: poetry run make runekit/_resources.py
       - name: Build app
-        run: make dist/RuneKit.app.zip
+        run: poetry run make dist/RuneKit.app.zip
 
       # Deploy
       - name: Upload to CI

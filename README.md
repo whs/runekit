@@ -20,14 +20,16 @@ Alt1-compatible toolbox for RuneScape 3, for Linux and macOS.
 
 ### macOS
 
-1. [Download RuneKit.app](https://github.com/whs/runekit/releases) and unzip
-2. Double click it
-   - The first launch may takes a few minutes while macOS verify the application's security (we shipped a bunch of unused libraries - it is harder to remove them than to just ship it). The dock icon will keep bouncing while this is in progress
-3. If permission prompt appears, grant it in System Preferences > Security. **Then quit RuneKit (right click dock icon > force quit) and start it again.** Don't quit RuneKit while it is downloading app list! The list of permissions are:
+1. [Download RuneKit.app](https://github.com/whs/runekit/releases/tag/continuous) and unzip (if you use Safari it should automatically unzip)
+2. Open Terminal (search in spotlight/launchpad if you can't find it)
+3. Type `sudo xattr -dr com.apple.quarantine ` (including trailing space) and drop the app onto Terminal so it would be like `yourname@yourmacname ~ % sudo xattr -dr com.apple.quarantine /Users/yourname/Downloads/RuneKit.app`. Press enter.
+4. Type your Mac login password. You must have a login password for this step (can remove it afterwards). There would be no indicator, just type it and press enter.
+5. Launch the app. The first launch might spring in the dock for a good minute.
+6. If permission prompt appears, grant it in System Preferences > Security. **Then quit RuneKit (right click dock icon > quit or force quit) and start it again.** Don't quit RuneKit while it is downloading app list! The list of permissions are:
    - Accessibility - for access to game window
    - Input Monitoring - for hooking alt+1 and idle detection
    - Screen Recording - for capturing game
-4. Once all permission has been granted the application appears as system tray icon
+7. Once all permission has been granted the application appears as system tray icon (top right)
 
 ## Troubleshooting
 

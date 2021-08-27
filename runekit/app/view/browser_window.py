@@ -67,7 +67,7 @@ class BrowserWindow(GameSnapMixin, QMainWindow):
         super().__init__(**kwargs)
         self.app = app
 
-        if self.framed and sys.platform != "darwin":
+        if self.framed:
             self.setAttribute(Qt.WA_TranslucentBackground)
             self.frame = WindowFrame(parent=self)
             self.frame.on_exit.connect(self.close)

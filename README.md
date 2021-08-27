@@ -20,14 +20,14 @@ Alt1-compatible toolbox for RuneScape 3, for Linux and macOS.
 
 ### macOS
 
-See developer guide in the next section.
-
-You will need to add Python in System Preferences > Security > Privacy in these sections:
-
-- Accessibility
-- Screen Recording
-
-Note that Python might appear as the closest macOS application (eg. your terminal emulator) instead of Python
+1. [Download RuneKit.app](https://github.com/whs/runekit/releases) and unzip
+2. Double click it
+   - The first launch may takes a few minutes while macOS verify the application's security (we shipped a bunch of unused libraries - it is harder to remove them than to just ship it). The dock icon will keep bouncing while this is in progress
+3. If permission prompt appears, grant it in System Preferences > Security. **Then quit RuneKit (right click dock icon > force quit) and start it again.** Don't quit RuneKit while it is downloading app list! The list of permissions are:
+   - Accessibility - for access to game window
+   - Input Monitoring - for hooking alt+1 and idle detection
+   - Screen Recording - for capturing game
+4. Once all permission has been granted the application appears as system tray icon
 
 ## Troubleshooting
 
@@ -54,6 +54,14 @@ poetry run python main.py
 
 Start with `--remote-debugging-port=9222` to enable remote debugger protocol.
 To debug, go to `chrome://inspect` on Chrome/Chromium.
+
+### Building .app on Mac
+
+1. Run the normal build steps
+2. XCode > Settings > Account and download your dev key
+   - I don't have paid Apple Developer CA to test
+3. Set codesign_identity in  RuneKit.spec or leave it None for ad-hoc sign
+5. `poetry run make dist/RuneKit.app.zip`
 
 ## License
 

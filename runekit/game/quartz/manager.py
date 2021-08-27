@@ -97,7 +97,7 @@ class QuartzGameManager(GameManager):
         if not self._instances:
             return None
 
-        return self._instances.values()[0]
+        return list(self._instances.values())[0]
 
     def get_instance_by_pid(self, pid: int) -> Optional[QuartzGameInstance]:
         for instance in self._instances.values():

@@ -44,7 +44,7 @@ class AppWindow(BrowserWindow):
 
     @property
     def framed(self) -> bool:
-        return self.settings.value("settings/styledBorder", "true") == "true"
+        return self.settings.value("settings/styledBorder", "true") == "true" and sys.platform != "darwin"
 
     def minimumSize(self) -> QSize:
         return QSize(self.app.manifest["minWidth"], self.app.manifest["minHeight"])

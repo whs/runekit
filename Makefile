@@ -25,12 +25,12 @@ dist/RuneKit.app.zip: dist/RuneKit.app
 
 # AppImage
 
-build/python3.9.6.AppImage:
+build/python3.9.7.AppImage:
 	mkdir build || true
-	wget https://github.com/niess/python-appimage/releases/download/python3.9/python3.9.6-cp39-cp39-manylinux1_x86_64.AppImage -O "$@"
+	wget https://github.com/niess/python-appimage/releases/download/python3.9/python3.9.7-cp39-cp39-manylinux1_x86_64.AppImage -O "$@"
 	chmod +x "$@"
 
-build/appdir: build/python3.9.6.AppImage
+build/appdir: build/python3.9.7.AppImage
 	$< --appimage-extract
 	mv squashfs-root build/appdir
 

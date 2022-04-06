@@ -123,11 +123,11 @@ class QuartzGameManager(GameManager):
         if not instance:
             return event
 
-        # Check for cmd1
+        # Check for option+1
         if nsevent.type() == Quartz.NSEventTypeKeyDown:
             if (
                 nsevent.keyCode() == 18
-                and nsevent.modifierFlags() & Quartz.NSEventModifierFlagCommand
+                and nsevent.modifierFlags() & Quartz.NSEventModifierFlagOption
             ):
                 instance.alt1_pressed.emit()
                 return None

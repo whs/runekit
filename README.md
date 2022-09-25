@@ -4,6 +4,8 @@
 
 Alt1-compatible toolbox for RuneScape 3, for Linux and macOS.
 
+**See also [Alt1 Electron](https://github.com/skillbert/alt1-electron) the experimental official Alt1 replacement from the Alt1 authors.**
+
 * [Compatibility](https://github.com/whs/runekit/wiki/App-Compatibility)
 * [Troubleshooting](https://github.com/whs/runekit/wiki/Troubleshooting)
 

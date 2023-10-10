@@ -166,7 +166,9 @@ class QuartzGameInstance(PsUtilNetStat, GameInstance):
         )
         if not imgref:
             self.manager.request_accessibility_popup.emit()
-            raise NoCapturePermission
+            logger.warning(
+                "Screen Recording permission is not allowed"
+            )
 
         out = cgimageref_to_image(imgref)
         scale = self.get_scaling()
